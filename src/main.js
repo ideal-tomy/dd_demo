@@ -9,11 +9,13 @@ import {
 import { runAnalysis } from "./lib/analysis.js";
 import { initTabs, switchPersona } from "./lib/tabs.js";
 import { initPhases, refreshPhases } from "./lib/phases.js";
+import { initTour, openTour } from "./lib/tour.js";
 
 assertPersonaData();
 
 initPhases();
 initTabs();
+initTour();
 
 const initial = getCurrentPersona();
 renderPersona(initial);
@@ -40,4 +42,4 @@ document.getElementById("run").addEventListener("click", () => {
   runAnalysis(getCurrentPersona());
 });
 
-window.__demo = { switchPersona, getCurrentPersona };
+window.__demo = { switchPersona, getCurrentPersona, openTour };

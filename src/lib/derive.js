@@ -43,23 +43,31 @@ export function getPmiResolveTotal(persona, state) {
 
 export function getValueupWaterfall(persona, state) {
   const { valueup } = persona;
-  const confirmed = getConfirmedLiability(persona, state);
-  const confirmedMid = confirmed.lo && confirmed.hi ? Math.round((confirmed.lo + confirmed.hi) / 2) : 0;
 
-  const ddAdj = confirmedMid > 0 ? -confirmedMid : valueup.ddAdjustment;
-  const adjustedEbitda = valueup.reportedEbitda + ddAdj;
+  // 確定簿外債務は大半が「一時的な純資産・価格調整」項目。年間EBITDAへの
+  // 恒常的補正は、採用したフラグの割合に応じて静的補正値をスケールして反映する。
+  const amtFlags = persona.flags.filter((f) => f.amt);
+  const confirmedAmt = getConfirmedFlags(persona, state).filter((f) => f.amt);
+  const ratio = amtFlags.length ? confirmedAmt.length / amtFlags.length : 0;
+
+  const ddAdjustment = Math.round(valueup.ddAdjustment * ratio);
+  const adjustedEbitda = valueup.reportedEbitda + ddAdjustment;
 
   const leverTotal = valueup.levers.reduce((s, l) => s + l.ebitdaUp, 0);
   const exitEbitda = adjustedEbitda + leverTotal;
 
+  const confirmed = getConfirmedLiability(persona, state);
+  const confirmedMid = confirmed.lo && confirmed.hi ? Math.round((confirmed.lo + confirmed.hi) / 2) : 0;
+
   return {
     reportedEbitda: valueup.reportedEbitda,
-    ddAdjustment: ddAdj,
+    ddAdjustment,
     adjustedEbitda,
     levers: valueup.levers,
     leverTotal,
     exitEbitda,
     confirmedMid,
+    ratio,
   };
 }
 
@@ -67,14 +75,13 @@ export function getExitBridge(persona, state) {
   const wf = getValueupWaterfall(persona, state);
   const { exit } = persona;
 
-  const entryEbitda = wf.confirmedMid > 0 ? wf.adjustedEbitda : exit.entryEbitda;
-  const exitEbitda = wf.confirmedMid > 0 ? wf.exitEbitda : exit.exitEbitda;
+  const entryEbitda = wf.adjustedEbitda;
+  const exitEbitda = wf.exitEbitda;
 
   const entryEv = Math.round(entryEbitda * exit.entryMult);
-  const ebitdaGain = exitEbitda - entryEbitda;
-  const exitEvBase = Math.round(exitEbitda * exit.entryMult);
-  const multGain = Math.round(exitEbitda * exit.exitMult) - exitEvBase;
+  const ebitdaGainEv = Math.round((exitEbitda - entryEbitda) * exit.entryMult);
   const exitEv = Math.round(exitEbitda * exit.exitMult);
+  const multGain = exitEv - Math.round(exitEbitda * exit.entryMult);
 
   return {
     entryEbitda,
@@ -83,12 +90,12 @@ export function getExitBridge(persona, state) {
     exitMult: exit.exitMult,
     story: exit.story,
     entryEv,
-    ebitdaGain,
+    ebitdaGain: ebitdaGainEv,
     multGain,
     exitEv,
     bridge: [
       { label: "Entry EV（実態EBITDA × マルチプル）", amt: entryEv },
-      { label: "+ EBITDA改善（労務・AI施策）", amt: ebitdaGain * exit.entryMult },
+      { label: "+ EBITDA改善（労務・AI施策）", amt: ebitdaGainEv },
       { label: "+ マルチプル再評価（テック化）", amt: multGain },
       { label: "Exit EV", amt: exitEv },
     ],

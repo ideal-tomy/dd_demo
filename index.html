@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簿外債務発見エンジン｜AXEON DD Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/styles/demo.css">
+</head>
+<body>
+
+<div class="topbar"><div class="inner">
+  <div class="brand">
+    <div class="mk">AX</div>
+    <div class="t">AXEON DD INTELLIGENCE<small>OFF-BALANCE LIABILITY ENGINE</small></div>
+  </div>
+  <div class="target" id="topbarTarget"></div>
+</div></div>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">発見系 DD ／ Reconciliation &amp; Explainable Flags</div>
+    <h1>純資産は、誰でも査定できる。<br>本丸は、<span class="u">帳簿に載っていない負債</span>にある。</h1>
+    <p class="lead">簿外債務は、計上されていなくても<b>データに痕跡を残す</b>。その痕跡は「本来一致すべき2つのソースの不一致」として現れる ―― ベテランDDの“違和感”の正体です。このエンジンは、業種ごとの事前知識を前提に複数ソースを突合し、<b>なぜ怪しいかの根拠</b>とともにフラグを立てます。最終判断は、あなたの違和感で。</p>
+  </section>
+
+  <div class="industry-tabs-wrap">
+    <div class="industry-tabs" id="industryTabs" role="tablist" aria-label="業種を選択"></div>
+  </div>
+
+  <div class="tgt">
+    <div class="l">
+      <div class="tag">TARGET COMPANY</div>
+      <h2 id="companyName"></h2>
+      <div class="sub" id="companySub"></div>
+      <div class="facts" id="companyFacts"></div>
+    </div>
+    <div class="r">
+      <div class="rt">PROFILE PRIOR</div>
+      <p id="profilePrior"></p>
+    </div>
+  </div>
+
+  <div class="setup">
+    <div class="card">
+      <div class="ch">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V7z"/></svg></span>事前知識（業種prior）</h3>
+        <span class="n" id="priorCount">5 件</span>
+      </div>
+      <div class="priors" id="priors"></div>
+      <div class="addprior">
+        <input id="priorInput" type="text" placeholder="例：倉庫の構内請負に偽装請負の疑い" aria-label="仮説を追加">
+        <button id="priorAdd" type="button">登録</button>
+      </div>
+      <p class="hint">DD担当が自分の仮説を登録できます。登録した観点は、突合のチェックリストに加わります。</p>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6H4z"/><path d="M4 14h16v6H4z"/></svg></span>データルーム</h3>
+        <span class="n" id="sourceCount">11 ソース</span>
+      </div>
+      <div class="sources" id="sources"></div>
+    </div>
+  </div>
+
+  <div class="runbar">
+    <div class="run-tag">突合対象：<b id="runSourceCount">11ソース</b> ／ 推計期間：<b>過去3期</b> ／ 全数解析（サンプリングではありません）</div>
+    <button class="run" id="run" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 3l14 9-14 9z"/></svg>
+      解析を実行
+    </button>
+  </div>
+
+  <div class="scan" id="scan">
+    <div class="st">RECONCILING SOURCES</div>
+    <div class="line" id="scanLine">&nbsp;</div>
+    <div class="track"><i id="scanBar"></i></div>
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="blk"><div class="k">検出フラグ</div><div class="v" id="sCount">0</div></div>
+    <div class="sep"></div>
+    <div class="blk"><div class="k">推定 簿外債務</div><div class="v gold" id="sRange">¥0</div></div>
+    <div class="sep"></div>
+    <div class="blk"><div class="k">人間が確定した額</div><div class="v" id="sConfirmed">¥0</div></div>
+    <div class="loop"><span class="pulse"></span><span id="loopMsg">採用・誤検知の判定が、次回類似案件の精度に反映されます</span></div>
+  </div>
+
+  <div class="results">
+    <div class="results-head" id="rHead">
+      <h2>発見されたフラグ</h2>
+      <span class="c" id="rCount"></span>
+      <span class="note">各フラグを開くと「なぜフラグしたか」の根拠を確認できます</span>
+    </div>
+    <div id="flags"></div>
+  </div>
+
+  <div class="closing" id="closing">
+    <div class="eyebrow">DD → PMI → Value-up</div>
+    <h2>これは「査定」で終わらない。<br>一つの発見が、<span class="g">価格・構造・企業価値</span>を貫く。</h2>
+    <p>検出された簿外債務は、買収価格の調整・補償条項・エスクロー・クロージング条件に直結します。さらに同じ発見は、PMIでの労務・ガバナンス標準化となり、解消そのものがバリューアップになる ―― AXEONが「指摘で止まらない」理由がここにあります。</p>
+    <div class="arc">
+      <div class="step"><div class="s">DD</div><div class="d">価格・構造に反映</div><div class="x">価格調整／特別補償／CoC同意取得</div></div>
+      <div class="step"><div class="s">PMI</div><div class="d">最初の100日で是正</div><div class="x">労務標準化／社保適正化／保証解除</div></div>
+      <div class="step"><div class="s">VALUE-UP</div><div class="d">リスク除去で価値向上</div><div class="x">実態EBITDA改善／再評価</div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    本デモは架空企業の架空データに基づくコンセプト実証です。実システムの出力は意思決定補助であり、鑑定・保証ではありません。すべてのフラグは人間による検証を前提とします。金額は概算レンジです。
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

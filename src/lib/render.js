@@ -1,6 +1,7 @@
 import { rangeYen, sumFlagRange } from "./format.js";
 import { getCurrentKey, getState, judgmentKey } from "./state.js";
 import { getPersona } from "../data/index.js";
+import { refreshPhases } from "./phases.js";
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -124,41 +125,65 @@ export function renderFlags(persona, animate = true) {
   const state = getState(persona.key);
   const personaKey = persona.key;
 
-  persona.flags.forEach((f, idx) => {
-    const el = document.createElement("div");
-    el.className = "flag sig-" + f.type;
-    el.dataset.id = f.id;
-    const dotsHtml =
-      '<div class="dots">' +
-      [1, 2, 3]
-        .map((n) => '<i class="' + (n <= f.confLv ? "f" : "") + '"></i>')
-        .join("") +
+  const quant = persona.flags.filter((f) => f.cat === "定量");
+  const disc = persona.flags.filter((f) => f.cat !== "定量");
+
+  if (quant.length) {
+    wrap.appendChild(makeGroupHeader("定量査定", "勤怠・給与・社保・就業規則から機械的に推計", quant.length));
+    quant.forEach((f, idx) => appendFlag(wrap, persona, f, personaKey, state, animate, idx));
+  }
+  if (disc.length) {
+    wrap.appendChild(makeGroupHeader("発見系", "突合・言語・時系列から気づくリスク", disc.length));
+    disc.forEach((f, idx) => appendFlag(wrap, persona, f, personaKey, state, animate, idx));
+  }
+}
+
+function makeGroupHeader(title, sub, count) {
+  const h = document.createElement("div");
+  h.className = "flag-group-head";
+  h.innerHTML = `<h3>${title}</h3><span class="sub">${sub}</span><span class="c">(${count}件)</span>`;
+  return h;
+}
+
+function appendFlag(wrap, persona, f, personaKey, state, animate, idx) {
+  const el = document.createElement("div");
+  el.className = "flag sig-" + f.type + (f.cat === "定量" ? " flag-quant" : " flag-disc");
+  el.dataset.id = f.id;
+  const dotsHtml =
+    '<div class="dots">' +
+    [1, 2, 3]
+      .map((n) => '<i class="' + (n <= f.confLv ? "f" : "") + '"></i>')
+      .join("") +
+    "</div>";
+  const starHtml = f.isStar ? '<span class="star-badge">業種特有</span>' : "";
+  const catBadge = f.cat === "定量" ? '<span class="cat-badge quant">定量</span>' : '<span class="cat-badge disc">発見</span>';
+  const amtHtml = f.amt
+    ? '<div class="label">推定エクスポージャー</div><div class="val">' +
+      rangeYen(f.amt[0], f.amt[1]) +
+      "</div>"
+    : '<div class="label">' +
+      f.struct.label +
+      '</div><div class="val struct">' +
+      f.struct.value +
       "</div>";
-    const starHtml = f.isStar ? '<span class="star-badge">業種特有</span>' : "";
-    const amtHtml = f.amt
-      ? '<div class="label">推定エクスポージャー</div><div class="val">' +
-        rangeYen(f.amt[0], f.amt[1]) +
-        "</div>"
-      : '<div class="label">' +
-        f.struct.label +
-        '</div><div class="val struct">' +
-        f.struct.value +
-        "</div>";
-    const nodesHtml = f.nodes
-      .map(
-        (n) =>
-          '<div class="srcrow"><span class="s">' +
-          n.s +
-          '</span><span class="val">' +
-          n.v +
-          "</span></div>"
-      )
-      .join("");
-    el.innerHTML = `
+  const nodesHtml = f.nodes
+    .map(
+      (n) =>
+        '<div class="srcrow"><span class="s">' +
+        n.s +
+        '</span><span class="val">' +
+        n.v +
+        "</span></div>"
+    )
+    .join("");
+  const calcHtml = f.calc
+    ? `<div class="calc"><span class="lab">計算の中身（機械的推計）</span><div class="formula">${f.calc.formula}</div><div class="calc-inputs">${f.calc.inputs.map((i) => `<div class="ci"><span class="k">${i.k}</span><span class="v">${i.v}</span></div>`).join("")}</div></div>`
+    : "";
+  el.innerHTML = `
       <div class="row">
         <div class="sig"><span class="badge">${f.type}</span><div class="conf">確信度</div>${dotsHtml}</div>
         <div class="mid">
-          <h3>${f.title}${starHtml}</h3>
+          <h3>${f.title}${starHtml}${catBadge}</h3>
           <div class="glance">${f.glance}</div>
         </div>
         <div class="amt">${amtHtml}</div>
@@ -172,6 +197,7 @@ export function renderFlags(persona, animate = true) {
           <div class="arrow"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
           <div class="node flagnode"><div class="nk">FLAG</div><div class="fl">${f.flagText}</div><div class="pr">prior: ${f.prior}</div></div>
         </div>
+        ${calcHtml}
         <div class="inf"><span class="lab">AIの推論（なぜフラグしたか）</span>${f.inference}</div>
         <div class="deal">ディールへの接続：${f.deal}</div>
         <div class="judge">
@@ -182,24 +208,23 @@ export function renderFlags(persona, animate = true) {
           <span class="state"></span>
         </div>
       </div></div>`;
-    wrap.appendChild(el);
-    el.querySelector(".row").addEventListener("click", () => el.classList.toggle("open"));
-    el.querySelectorAll(".judge button").forEach((b) => {
-      b.addEventListener("click", (e) => {
-        e.stopPropagation();
-        judge(persona, f.id, b.dataset.j, el);
-      });
+  wrap.appendChild(el);
+  el.querySelector(".row").addEventListener("click", () => el.classList.toggle("open"));
+  el.querySelectorAll(".judge button").forEach((b) => {
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      judge(persona, f.id, b.dataset.j, el);
     });
-    const jKey = judgmentKey(personaKey, f.id);
-    if (state.judgments[jKey]) {
-      applyJudgmentUI(el, state.judgments[jKey]);
-    }
-    if (animate) {
-      setTimeout(() => el.classList.add("show"), reduce ? 0 : idx * 120);
-    } else {
-      el.classList.add("show");
-    }
   });
+  const jKey = judgmentKey(personaKey, f.id);
+  if (state.judgments[jKey]) {
+    applyJudgmentUI(el, state.judgments[jKey]);
+  }
+  if (animate) {
+    setTimeout(() => el.classList.add("show"), reduce ? 0 : idx * 120);
+  } else {
+    el.classList.add("show");
+  }
 }
 
 export function judge(persona, flagId, j, el) {
@@ -208,6 +233,7 @@ export function judge(persona, flagId, j, el) {
   state.judgments[jKey] = j;
   applyJudgmentUI(el, j);
   updateSummary(persona);
+  refreshPhases(persona);
 }
 
 export function updateSummary(persona) {

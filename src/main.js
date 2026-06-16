@@ -8,13 +8,16 @@ import {
 } from "./lib/render.js";
 import { runAnalysis } from "./lib/analysis.js";
 import { initTabs, switchPersona } from "./lib/tabs.js";
+import { initPhases, refreshPhases } from "./lib/phases.js";
 
 assertPersonaData();
 
+initPhases();
 initTabs();
 
 const initial = getCurrentPersona();
 renderPersona(initial);
+refreshPhases(initial);
 
 document.getElementById("priorAdd").addEventListener("click", addPrior);
 document.getElementById("priorInput").addEventListener("keydown", (e) => {
@@ -37,5 +40,4 @@ document.getElementById("run").addEventListener("click", () => {
   runAnalysis(getCurrentPersona());
 });
 
-// Expose for debugging
 window.__demo = { switchPersona, getCurrentPersona };

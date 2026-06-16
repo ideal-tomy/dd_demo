@@ -1,6 +1,7 @@
 import { getAllPriors, revealResults } from "./render.js";
 import { getState, setScanning } from "./state.js";
 import { setTabsDisabled } from "./tabs.js";
+import { refreshPhases, updatePhaseLocks } from "./phases.js";
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -45,6 +46,8 @@ export function runAnalysis(persona) {
     setTabsDisabled(false);
     document.getElementById("scan").classList.remove("on");
     revealResults(persona, true);
+    updatePhaseLocks();
+    refreshPhases(persona);
   }
 
   tick();

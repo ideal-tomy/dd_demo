@@ -6,6 +6,7 @@ import {
   revealResults,
   getCurrentPersona,
 } from "./render.js";
+import { refreshPhases } from "./phases.js";
 
 let onSwitch = null;
 
@@ -62,6 +63,8 @@ export function switchPersona(key) {
   if (state.ran) {
     revealResults(persona, false);
   }
+
+  refreshPhases(persona);
 
   if (onSwitch) onSwitch(key);
 }

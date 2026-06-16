@@ -11,6 +11,8 @@ import { runAnalysis } from "./analysis.js";
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const DEMO_KEY = "logistics";
+// 各スライドの表示秒数の倍率（ゆっくり読めるように 1.5 倍 ≒ 全体90秒）。
+const DWELL_MULT = 1.5;
 
 /**
  * 各スライドは決定論的に状態を組み立てる（seek でどこへでも飛べる）。
@@ -126,8 +128,13 @@ let root = null;
 let idx = 0;
 let playing = false;
 let busy = false;
-let timer = null;
 let onResize = null;
+
+// rAF ベースの滞在タイマー（一時停止／再開とプログレスバーを同期）
+let rafId = null;
+let slideDur = 0;
+let slideStart = 0;
+let elapsedBeforePause = 0;
 
 function delay(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -163,24 +170,61 @@ function setDemoState(step) {
   switchPhase(step.phase);
 }
 
-function cancelTimer() {
-  if (timer) {
-    clearTimeout(timer);
-    timer = null;
+function dwellOf(step) {
+  return (step.autoMs || 5200) * DWELL_MULT;
+}
+
+function setProgress(frac) {
+  if (!root) return;
+  const bar = root.querySelector(".tc-prog i");
+  if (bar) bar.style.width = Math.max(0, Math.min(1, frac)) * 100 + "%";
+}
+
+function tickDwell() {
+  const el = elapsedBeforePause + (performance.now() - slideStart);
+  const frac = slideDur ? el / slideDur : 1;
+  setProgress(frac);
+  if (frac >= 1) {
+    rafId = null;
+    go(1);
+    return;
+  }
+  rafId = requestAnimationFrame(tickDwell);
+}
+
+function startDwell(dur) {
+  cancelDwell();
+  slideDur = dur;
+  slideStart = performance.now();
+  rafId = requestAnimationFrame(tickDwell);
+}
+
+function pauseDwell() {
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+    elapsedBeforePause += performance.now() - slideStart;
   }
 }
 
-function schedule() {
-  cancelTimer();
-  if (!playing) return;
-  const s = STEPS[idx];
-  timer = setTimeout(() => go(1), s.autoMs || 5200);
+function resumeDwell() {
+  if (!playing || !slideDur) return;
+  slideStart = performance.now();
+  rafId = requestAnimationFrame(tickDwell);
+}
+
+function cancelDwell() {
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+  elapsedBeforePause = 0;
 }
 
 async function seek(i, forward) {
   if (busy) return;
   if (i < 0 || i >= STEPS.length) return;
-  cancelTimer();
+  cancelDwell();
   busy = true;
   idx = i;
   const s = STEPS[i];
@@ -206,7 +250,7 @@ async function seek(i, forward) {
       positionSpot(s);
       if (!playing) return;
     }
-    schedule();
+    startDwell(dwellOf(s));
   }
 }
 
@@ -225,7 +269,7 @@ async function togglePlay() {
   playing = !playing;
   updateControls();
   if (!playing) {
-    cancelTimer();
+    pauseDwell();
     return;
   }
   const s = STEPS[idx];
@@ -235,8 +279,12 @@ async function togglePlay() {
     busy = false;
     positionSpot(s);
     if (!playing) return;
+    startDwell(dwellOf(s));
+    return;
   }
-  schedule();
+  // 途中まで読んでいた場合は残り時間から再開、無ければ新規スタート
+  if (slideDur && elapsedBeforePause > 0) resumeDwell();
+  else startDwell(dwellOf(s));
 }
 
 function scrollToTarget(s) {
@@ -284,11 +332,14 @@ function renderCaption() {
     </div>
     <h4>${s.t}</h4>
     <p>${s.b}</p>
+    <div class="tc-prog" aria-hidden="true"><i></i></div>
     <div class="tc-controls">
       <button class="tc-btn" data-act="prev" type="button" ${idx === 0 ? "disabled" : ""}>◀ 前へ</button>
       <button class="tc-btn play" data-act="play" type="button">${playing ? "❙❙ 一時停止" : "▶ 再生"}</button>
       <button class="tc-btn" data-act="next" type="button">${idx === STEPS.length - 1 ? "もう一度 ⟲" : "次へ ▶"}</button>
     </div>`;
+
+  setProgress(0);
 
   cap.querySelector(".tc-x").addEventListener("click", close);
   cap.querySelector('[data-act="prev"]').addEventListener("click", () => go(-1));
@@ -343,7 +394,7 @@ export function openTour() {
 
 export function close() {
   if (!root) return;
-  cancelTimer();
+  cancelDwell();
   playing = false;
   window.removeEventListener("resize", onResize);
   document.removeEventListener("keydown", onKey);

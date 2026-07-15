@@ -1,0 +1,123 @@
+{
+  "name": "@axeon/ai-demo-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Universal AI Demo Platform — Core transport, Trial Gateway, Providers",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./demo-core": {
+      "types": "./dist/demo-core/index.d.ts",
+      "import": "./dist/demo-core/index.js"
+    },
+    "./demo-core/storage": {
+      "types": "./dist/demo-core/storage.d.ts",
+      "import": "./dist/demo-core/storage.js"
+    },
+    "./demo-core/knowledge": {
+      "types": "./dist/demo-core/knowledge.d.ts",
+      "import": "./dist/demo-core/knowledge.js"
+    },
+    "./demo-core/demo-core-config": {
+      "types": "./dist/demo-core/demo-core-config.d.ts",
+      "import": "./dist/demo-core/demo-core-config.js"
+    },
+    "./providers/openai-adapter": {
+      "types": "./dist/providers/openai-adapter.d.ts",
+      "import": "./dist/providers/openai-adapter.js"
+    },
+    "./providers/anthropic-adapter": {
+      "types": "./dist/providers/anthropic-adapter.d.ts",
+      "import": "./dist/providers/anthropic-adapter.js"
+    },
+    "./providers/gemini-adapter": {
+      "types": "./dist/providers/gemini-adapter.d.ts",
+      "import": "./dist/providers/gemini-adapter.js"
+    },
+    "./trial/gateway": {
+      "types": "./dist/trial/gateway.d.ts",
+      "import": "./dist/trial/gateway.js"
+    },
+    "./trial/http": {
+      "types": "./dist/trial/http.d.ts",
+      "import": "./dist/trial/http.js"
+    },
+    "./trial/hash": {
+      "types": "./dist/trial/hash.d.ts",
+      "import": "./dist/trial/hash.js"
+    },
+    "./trial/admin": {
+      "types": "./dist/trial/admin.d.ts",
+      "import": "./dist/trial/admin.js"
+    },
+    "./trial/redis": {
+      "types": "./dist/trial/redis.d.ts",
+      "import": "./dist/trial/redis.js"
+    },
+    "./trial/rate-limiter": {
+      "types": "./dist/trial/rate-limiter.d.ts",
+      "import": "./dist/trial/rate-limiter.js"
+    },
+    "./trial/concurrency-lock": {
+      "types": "./dist/trial/concurrency-lock.d.ts",
+      "import": "./dist/trial/concurrency-lock.js"
+    },
+    "./trial/server-adapters": {
+      "types": "./dist/trial/server-adapters.d.ts",
+      "import": "./dist/trial/server-adapters.js"
+    },
+    "./trial/spend-reservation": {
+      "types": "./dist/trial/spend-reservation.d.ts",
+      "import": "./dist/trial/spend-reservation.js"
+    },
+    "./trial/trial-validator": {
+      "types": "./dist/trial/trial-validator.d.ts",
+      "import": "./dist/trial/trial-validator.js"
+    },
+    "./trial/usage-ledger": {
+      "types": "./dist/trial/usage-ledger.d.ts",
+      "import": "./dist/trial/usage-ledger.js"
+    },
+    "./config/provider.config": {
+      "types": "./dist/config/provider.config.d.ts",
+      "import": "./dist/config/provider.config.js"
+    },
+    "./config/pricing.config": {
+      "types": "./dist/config/pricing.config.d.ts",
+      "import": "./dist/config/pricing.config.js"
+    },
+    "./config/trial-policy.config": {
+      "types": "./dist/config/trial-policy.config.d.ts",
+      "import": "./dist/config/trial-policy.config.js"
+    },
+    "./types/access-mode": {
+      "types": "./dist/types/access-mode.d.ts",
+      "import": "./dist/types/access-mode.js"
+    },
+    "./types/provider": {
+      "types": "./dist/types/provider.d.ts",
+      "import": "./dist/types/provider.js"
+    },
+    "./types/trial": {
+      "types": "./dist/types/trial.d.ts",
+      "import": "./dist/types/trial.js"
+    },
+    "./types/errors": {
+      "types": "./dist/types/errors.d.ts",
+      "import": "./dist/types/errors.js"
+    },
+    "./types/usage": {
+      "types": "./dist/types/usage.d.ts",
+      "import": "./dist/types/usage.js"
+    }
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "pdfjs-dist": "^6.1.200"
+  }
+}

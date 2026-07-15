@@ -1522,3 +1522,92 @@ body {
   background: var(--white);
   resize: vertical;
 }
+
+.dd-company-detail-toggle {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.dd-company-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+}
+
+.dd-company-detail__name {
+  margin: 0;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.dd-company-detail__facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.dd-company-detail__facts div {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.dd-company-detail__facts dt {
+  font-size: 0.62rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.dd-company-detail__facts dd {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.dd-company-detail__block h3 {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+}
+
+.dd-company-detail__block p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.dd-findings-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.dd-findings-list li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  display: grid;
+  gap: 2px;
+}
+
+.dd-findings-list__title {
+  font-weight: 700;
+}

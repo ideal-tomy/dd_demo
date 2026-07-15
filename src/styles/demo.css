@@ -24,6 +24,30 @@ body{background:var(--paper);color:var(--ink);font-family:"Noto Sans JP",sans-se
 .topbar .target{font-size:12px;color:rgba(255,255,255,.62);}
 .topbar .target b{color:#fff;font-weight:700;}
 .topbar .target .mono{color:var(--gold-soft);}
+.topbar-ai-cta{
+  margin-left:auto;
+  flex-shrink:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 18px;
+  border-radius:999px;
+  background:var(--gold);
+  color:var(--navy);
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:.04em;
+  text-decoration:none;
+  white-space:nowrap;
+  box-shadow:0 0 0 2px rgba(255,255,255,.12);
+  transition:transform .15s,filter .15s,box-shadow .15s;
+}
+.topbar-ai-cta:hover{
+  filter:brightness(1.06);
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
+  color:var(--navy);
+}
 
 /* ---------- hero ---------- */
 .hero{padding:46px 0 30px;border-bottom:1px solid var(--line);}
@@ -210,6 +234,36 @@ body{background:var(--paper);color:var(--ink);font-family:"Noto Sans JP",sans-se
 
 /* ---------- tour launch button ---------- */
 .hero-cta{margin-top:24px;}
+.hero-ai-cta{margin-top:22px;}
+.hero-ai-btn{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-width:420px;
+  padding:16px 20px;
+  border-radius:14px;
+  background:var(--navy);
+  color:#fff;
+  text-decoration:none;
+  box-shadow:0 8px 24px rgba(15,28,46,.18);
+  transition:transform .15s,box-shadow .15s;
+}
+.hero-ai-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 28px rgba(15,28,46,.22);
+  color:#fff;
+}
+.hero-ai-btn__label{
+  font-weight:800;
+  font-size:16px;
+  letter-spacing:.02em;
+}
+.hero-ai-btn__label::after{content:" →";}
+.hero-ai-btn__sub{
+  font-size:12px;
+  color:rgba(255,255,255,.72);
+  line-height:1.45;
+}
 .tour-launch{display:inline-flex;align-items:center;gap:14px;background:var(--navy);color:#fff;border:1px solid var(--navy);border-radius:12px;padding:12px 20px 12px 14px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .15s,box-shadow .15s,background .15s;box-shadow:0 6px 18px rgba(22,36,60,.18);}
 .tour-launch:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(22,36,60,.26);background:var(--navy2);}
 .tour-launch .ico{width:38px;height:38px;border-radius:50%;background:var(--gold);color:#231a07;display:flex;align-items:center;justify-content:center;flex-shrink:0;}

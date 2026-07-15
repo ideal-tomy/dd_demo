@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { executeTrialAsk } from "../../src/vendor/ai-demo/trial/gateway";
+import { executeTrialAsk } from "@axeon/ai-demo-core/trial/gateway";
 import {
   codeHashFromBearer,
   trialErrorPayload,
-} from "../../src/vendor/ai-demo/trial/http";
-import type { TrialAskRequestBody } from "../../src/vendor/ai-demo/types/trial";
+} from "@axeon/ai-demo-core/trial/http";
+import type { TrialAskRequestBody } from "@axeon/ai-demo-core/types/trial";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Cache-Control", "no-store");
@@ -52,6 +52,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })),
       knowledgeCharCount: Number(body.knowledgeCharCount) || 0,
       estimatedInputTokens: Number(body.estimatedInputTokens) || 0,
+      responseFormat: body.responseFormat,
+      temperature: body.temperature,
     });
     res.status(200).json(result);
   } catch (err) {

@@ -5,11 +5,6 @@ import { ddTrialApiPlugin } from "./vite.dd-api";
 
 export default defineConfig({
   plugins: [react(), ddTrialApiPlugin()],
-  resolve: {
-    alias: {
-      "@ai-demo": path.resolve(__dirname, "src/vendor/ai-demo"),
-    },
-  },
   build: {
     outDir: "dist",
     rollupOptions: {

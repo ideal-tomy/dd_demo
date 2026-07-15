@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:core": "npm run build --prefix ../AI-Demo-Studio/packages/ai-demo-core",
+    "prebuild": "npm run build:core",
     "dev": "vite",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
-    "preview": "vite preview",
-    "copy-vendor": "node scripts/copy-vendor-phase4.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@axeon/ai-demo-core": "file:../AI-Demo-Studio/packages/ai-demo-core",
     "@upstash/redis": "^1.38.0",
     "pdfjs-dist": "^6.1.200",
     "react": "^19.1.0",

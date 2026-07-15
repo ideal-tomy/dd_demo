@@ -3,7 +3,7 @@ import {
   DocumentIngestError,
   evaluateKnowledge,
   extractDocumentText,
-} from "../../vendor/ai-demo/demo-core";
+} from "@axeon/ai-demo-core/demo-core";
 import type { MaCompany } from "../../data/ma-companies";
 
 type Props = {

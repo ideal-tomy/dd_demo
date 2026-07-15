@@ -17,10 +17,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "resolveJsonModule": true,
-    "paths": {
-      "@ai-demo/*": ["./src/vendor/ai-demo/*"]
-    }
+    "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

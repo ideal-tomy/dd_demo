@@ -1,12 +1,12 @@
 import type { Plugin } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { loadEnv } from "vite";
-import { executeTrialAsk, getTrialStatusForCode } from "./src/vendor/ai-demo/trial/gateway";
+import { executeTrialAsk, getTrialStatusForCode } from "@axeon/ai-demo-core/trial/gateway";
 import {
   codeHashFromBearer,
   trialErrorPayload,
-} from "./src/vendor/ai-demo/trial/http";
-import type { TrialAskRequestBody } from "./src/vendor/ai-demo/types/trial";
+} from "@axeon/ai-demo-core/trial/http";
+import type { TrialAskRequestBody } from "@axeon/ai-demo-core/types/trial";
 
 function applyEnv(mode: string) {
   const env = loadEnv(mode, process.cwd(), "");
@@ -83,6 +83,8 @@ async function handleTrialAsk(req: IncomingMessage, res: ServerResponse) {
       })),
       knowledgeCharCount: Number(body.knowledgeCharCount) || 0,
       estimatedInputTokens: Number(body.estimatedInputTokens) || 0,
+      responseFormat: body.responseFormat,
+      temperature: body.temperature,
     });
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AiTransportError,
   evaluateKnowledge,
-} from "../vendor/ai-demo/demo-core";
+} from "@axeon/ai-demo-core/demo-core";
 import {
   getApiKey,
   getDdAccessMode,
@@ -53,7 +53,10 @@ import {
   type StrategyAxis,
 } from "../data/ma-companies";
 import type { DdDiagnosisResult } from "../ai/types";
+import { ensureAiDemoCoreConfigured } from "../lib/ai-demo-core-setup";
 import "../styles/ai.css";
+
+ensureAiDemoCoreConfigured();
 
 type DataSource = "sample" | "client";
 

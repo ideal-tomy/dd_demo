@@ -76,7 +76,7 @@ Studio と **同じ Upstash** を共有する想定。
 | AI A/B | `runDdReport.ts`, `askDdFollowup.ts`, `adapters/dd-report-*`, `dd-ask-*` |
 | AI C | `runDiagnosis.ts`, `adapters/dd-input.ts`, `dd-output.ts` |
 | Access | `src/access/`, `src/components/access/` |
-| Vendor Core | `src/vendor/ai-demo/` |
+| Vendor Core | `@axeon/ai-demo-core`（Phase 5 で vendor 廃止） |
 | Trial API | `api/trial/ask.ts`, `api/trial/status.ts` |
 
 ## 受け入れチェック

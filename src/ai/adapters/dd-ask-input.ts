@@ -1,5 +1,5 @@
-import type { AiRequest } from "../../vendor/ai-demo/types/provider";
-import type { AiProvider } from "../../vendor/ai-demo/types/access-mode";
+import type { AiRequest } from "@axeon/ai-demo-core/types/provider";
+import type { AiProvider } from "@axeon/ai-demo-core/types/access-mode";
 import { demoConfig } from "../../config/demo.config";
 import type { DdFlag } from "../scenario/build-dd-flags";
 import type { MaCompany } from "../../data/ma-companies";

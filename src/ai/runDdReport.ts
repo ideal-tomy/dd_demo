@@ -1,8 +1,8 @@
-import { sendAiRequest } from "../vendor/ai-demo/demo-core";
+import { sendAiRequest } from "@axeon/ai-demo-core/demo-core";
 import {
   countCharacters,
   estimateTokens,
-} from "../vendor/ai-demo/demo-core/knowledge";
+} from "@axeon/ai-demo-core/demo-core/knowledge";
 import {
   getApiKey,
   getDdAccessMode,

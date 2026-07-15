@@ -1,144 +1,85 @@
-import type { DdDiagnosisResult, DdFormInput } from "../ai/types";
+import type { DdDiagnosisResult } from "../ai/types";
 
-type FormProps = {
-  value: DdFormInput;
-  onChange: (next: DdFormInput) => void;
-  onSubmit: () => void;
-  onFillSample: () => void;
-  busy: boolean;
+type Props = {
+  result: DdDiagnosisResult;
+  highlight?: boolean;
 };
 
-const FIELDS: { key: keyof DdFormInput; label: string; rows?: number }[] = [
-  { key: "companyName", label: "企業名" },
-  { key: "industry", label: "業種" },
-  { key: "revenue", label: "売上規模" },
-  { key: "employees", label: "従業員数" },
-  { key: "challenges", label: "現在の課題", rows: 3 },
-  { key: "systems", label: "利用中システム", rows: 2 },
-  { key: "freeText", label: "自由記述", rows: 3 },
-];
-
-export function DiagnosisForm({
-  value,
-  onChange,
-  onSubmit,
-  onFillSample,
-  busy,
-}: FormProps) {
+export function DiagnosisResultView({ result, highlight }: Props) {
   return (
-    <form
-      className="dd-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit();
-      }}
-    >
-      <div className="dd-form__grid">
-        {FIELDS.map((f) => (
-          <label key={String(f.key)} className="dd-field">
-            <span>{f.label}</span>
-            {f.rows ? (
-              <textarea
-                rows={f.rows}
-                value={value[f.key]}
-                onChange={(e) =>
-                  onChange({ ...value, [f.key]: e.target.value })
-                }
-                required={f.key !== "freeText"}
-              />
-            ) : (
-              <input
-                value={value[f.key]}
-                onChange={(e) =>
-                  onChange({ ...value, [f.key]: e.target.value })
-                }
-                required
-              />
-            )}
-          </label>
-        ))}
-      </div>
-      <div className="dd-form__actions">
-        <button type="button" className="dd-btn-ghost" onClick={onFillSample}>
-          サンプル企業を入れる
-        </button>
-        <button type="submit" className="dd-btn" disabled={busy}>
-          {busy ? "診断中…" : "診断を実行"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-export function DiagnosisResultView({ result }: { result: DdDiagnosisResult }) {
-  return (
-    <div className="dd-result">
+    <div className={highlight ? "dd-result dd-card--flash" : "dd-result"}>
       <section>
         <h3>Diagnosis</h3>
         <p>{result.diagnosis}</p>
       </section>
       <section>
-        <h3>Tech Opportunity</h3>
-        <p>{result.techOpportunity}</p>
+        <h3>Value-up Plan</h3>
+        <p>{result.planNarrative}</p>
       </section>
       <section>
-        <h3>Development Options</h3>
+        <h3>Levers</h3>
         <ul>
-          {result.developmentOptions.map((o: DdDiagnosisResult["developmentOptions"][number]) => (
-            <li key={o.title}>
-              <strong>{o.title}</strong>
-              <span>{o.summary}</span>
+          {result.leverDetails.map((l) => (
+            <li key={l.lever}>
+              <strong>{l.lever}</strong>
+              <span>{l.rationale}</span>
+              {l.kpi ? <span className="dd-muted">KPI: {l.kpi}</span> : null}
             </li>
           ))}
         </ul>
       </section>
       <section>
-        <h3>Priority</h3>
-        <ol>
-          {result.priority
-            .slice()
-            .sort((a, b) => a.rank - b.rank)
-            .map((p) => (
-              <li key={`${p.rank}-${p.item}`}>
-                <strong>
-                  #{p.rank} {p.item}
-                </strong>
-                <span>{p.rationale}</span>
-              </li>
-            ))}
-        </ol>
+        <h3>Off-balance Treatment</h3>
+        <ul>
+          {result.offbalancePlan.map((o) => (
+            <li key={o.item}>
+              <strong>{o.item}</strong>
+              <span>{o.treatment}</span>
+              {o.timing ? (
+                <span className="dd-muted">Timing: {o.timing}</span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
       </section>
       <section>
-        <h3>Investment &amp; Impact</h3>
-        <p>
-          <strong>Investment:</strong> {result.investmentImpact.investment}
-        </p>
-        <p>
-          <strong>Impact:</strong> {result.investmentImpact.impact}
-        </p>
-        {result.investmentImpact.note ? (
-          <p className="dd-muted">{result.investmentImpact.note}</p>
-        ) : null}
-      </section>
-      <section>
-        <h3>Prototype</h3>
-        <p>
-          <strong>{result.prototype.name}</strong>
-        </p>
-        <p>{result.prototype.scope}</p>
-        <p className="dd-muted">Next: {result.prototype.nextStep}</p>
+        <h3>EXIT Story</h3>
+        <p>{result.exitStory}</p>
       </section>
       <section>
         <h3>Roadmap</h3>
+        <ol className="dd-roadmap">
+          <li>
+            <strong>Phase 1</strong>
+            <span>{result.roadmap.phase1}</span>
+          </li>
+          <li>
+            <strong>Phase 2</strong>
+            <span>{result.roadmap.phase2}</span>
+          </li>
+          <li>
+            <strong>Phase 3</strong>
+            <span>{result.roadmap.phase3}</span>
+          </li>
+        </ol>
+      </section>
+      {result.gapAdvice ? (
+        <section className="dd-gap-advice">
+          <h3>Gap Advice</h3>
+          <p>{result.gapAdvice}</p>
+        </section>
+      ) : null}
+      <section>
+        <h3>Risks</h3>
         <ul>
-          {result.roadmap.map((r) => (
-            <li key={r.phase}>
-              <strong>{r.phase}</strong>
-              <span>{r.items.join(" · ")}</span>
-            </li>
+          {result.risks.map((r) => (
+            <li key={r}>{r}</li>
           ))}
         </ul>
       </section>
+      <p className="dd-muted">
+        本試算はサンプル診断であり、実案件では追加調査が必要です。
+      </p>
     </div>
   );
 }

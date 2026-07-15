@@ -1,5 +1,8 @@
 import { sendAiRequest } from "../vendor/ai-demo/demo-core";
-import { estimateTokens } from "../vendor/ai-demo/demo-core/knowledge";
+import {
+  countCharacters,
+  estimateTokens,
+} from "../vendor/ai-demo/demo-core/knowledge";
 import {
   getApiKey,
   getDdAccessMode,
@@ -7,13 +10,15 @@ import {
   getDdProvider,
   getTrialCode,
 } from "../access/dd-settings";
-import { buildDdAiRequest, formatFormAsUserMessage } from "./adapters/dd-input";
-import { parseDdDiagnosisText } from "./adapters/dd-output";
 import {
-  SAMPLE_RESULT,
-  type DdDiagnosisResult,
-  type DdFormInput,
-} from "./types";
+  buildDdAiRequest,
+  formatScenarioUserMessage,
+} from "./adapters/dd-input";
+import { parseDdDiagnosisText } from "./adapters/dd-output";
+import { buildSampleNarrative } from "./scenario/sample-narrative";
+import type { ExitComputed, ScenarioParams } from "./scenario/exit-model";
+import type { MaCompany } from "../data/ma-companies";
+import type { DdDiagnosisResult } from "./types";
 
 export type RunDiagnosisOutcome = {
   result: DdDiagnosisResult;
@@ -21,23 +26,38 @@ export type RunDiagnosisOutcome = {
   mode: string;
 };
 
+export type RunDiagnosisInput = {
+  company: MaCompany;
+  params: ScenarioParams;
+  computed: ExitComputed;
+  knowledge?: string;
+};
+
 export async function runDiagnosis(
-  form: DdFormInput,
+  input: RunDiagnosisInput,
 ): Promise<RunDiagnosisOutcome> {
   const mode = getDdAccessMode();
+  const { company, params, computed } = input;
+  const knowledge = input.knowledge?.trim() ?? "";
 
   if (mode === "sample") {
-    return { result: SAMPLE_RESULT, mode };
+    return {
+      result: buildSampleNarrative(company, params, computed),
+      mode,
+    };
   }
 
   const provider = mode === "managed-trial" ? "openai" : getDdProvider();
   const model = getDdModel();
   const request = buildDdAiRequest({
-    form,
+    company,
+    params,
+    computed,
     provider,
     model,
     accessMode: mode,
     apiKey: mode === "byok-direct" ? getApiKey(provider) : undefined,
+    knowledge,
   });
 
   if (mode === "byok-direct" && !request.apiKey?.trim()) {
@@ -49,13 +69,15 @@ export async function runDiagnosis(
     throw new Error("体験コードを詳細設定で保存してください。");
   }
 
-  const userMsg = formatFormAsUserMessage(form);
+  const userMsg = formatScenarioUserMessage(company, params, computed, {
+    knowledge,
+  });
   const estimatedInputTokens =
     estimateTokens(request.systemPrompt) + estimateTokens(userMsg);
 
   const response = await sendAiRequest(request, {
     trialCode: mode === "managed-trial" ? trialCode : undefined,
-    knowledgeCharCount: 0,
+    knowledgeCharCount: countCharacters(knowledge),
     estimatedInputTokens,
   });
 

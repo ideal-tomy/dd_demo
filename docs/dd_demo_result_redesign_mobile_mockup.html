@@ -1,0 +1,122 @@
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">DDデモ結果画面の改善モックアップ。主軸タブ切替で数値と処置方針が変わり、変更箇所がハイライトされる。</h2>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+<div style="background:var(--surface-1);border-radius:12px;padding:14px 12px;font-family:'Noto Sans JP',var(--font-sans);max-width:380px;margin:0 auto;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div>
+      <p style="margin:0;font-size:12px;color:var(--text-muted);">東和ロジスティクス / 運送</p>
+      <p style="margin:0;font-size:14px;font-weight:500;color:var(--text-primary);">EXIT試算 30億円目標・3年</p>
+    </div>
+    <button style="font-size:12px;padding:6px 10px;" onclick="sendPrompt('パラメータパネルをボトムシートで開くUIの実装方法を教えて')">条件変更 ↗</button>
+  </div>
+
+  <div id="axisTabs" style="display:flex;gap:6px;margin-bottom:12px;">
+    <button data-axis="system" style="flex:1;font-size:12px;padding:8px 4px;">システム効率化</button>
+    <button data-axis="restructure" style="flex:1;font-size:12px;padding:8px 4px;">不採算整理</button>
+    <button data-axis="strategy" style="flex:1;font-size:12px;padding:8px 4px;">戦略見直し</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px;">
+    <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:12px;">
+      <p style="margin:0;font-size:12px;color:var(--text-secondary);">想定株式価値</p>
+      <p style="margin:2px 0 0;font-size:24px;font-weight:500;color:var(--text-primary);"><span id="valNum">7.2</span><span style="font-size:13px;">億円</span></p>
+      <p id="valDiff" style="margin:2px 0 0;font-size:12px;color:var(--text-muted);">前回比 —</p>
+    </div>
+    <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:12px;">
+      <p style="margin:0;font-size:12px;color:var(--text-secondary);">目標とのギャップ</p>
+      <p style="margin:2px 0 0;font-size:24px;font-weight:500;" id="gapNum">−22.8</p>
+      <p id="gapLabel" style="margin:2px 0 0;font-size:12px;color:var(--text-danger);">未達 — 期間延長を検討</p>
+    </div>
+  </div>
+
+  <p style="margin:0 0 6px;font-size:13px;font-weight:500;color:var(--text-primary);">EXITブリッジ</p>
+  <div id="bridge" style="display:flex;align-items:flex-end;gap:6px;height:96px;margin-bottom:4px;"></div>
+  <div id="bridgeLabels" style="display:flex;gap:6px;margin-bottom:14px;"></div>
+
+  <p style="margin:0 0 6px;font-size:13px;font-weight:500;color:var(--text-primary);">バリューアップレバー <span style="font-weight:400;color:var(--text-muted);font-size:12px;">タップで詳細</span></p>
+  <div id="levers" style="margin-bottom:14px;"></div>
+
+  <p style="margin:0 0 6px;font-size:13px;font-weight:500;color:var(--text-primary);">簿外債務と処置 <span style="font-weight:400;color:var(--text-muted);font-size:12px;">レンジ=推計幅</span></p>
+  <div id="obItems" style="margin-bottom:10px;"></div>
+
+  <p style="margin:0;font-size:11px;color:var(--text-muted);">本試算はサンプル診断です。実案件では追加調査が必要です。</p>
+</div>
+
+<script>
+const D={
+ system:{val:7.2,gap:-22.8,ebitda:265,levers:[
+  {n:"AI配車・動態管理",v:33,kpi:"実車率・人件費率",r:"配車の属人化を解消し稼働率を改善"},
+  {n:"倉庫WMS+ハンディ",v:14,kpi:"庫内生産性",r:"ピッキング動線と在庫精度を改善"},
+  {n:"勤怠デジタル化",v:8,kpi:"残業時間",r:"残業構造を恒久是正し簿外の再発を防止"}],
+ ob:[
+  {n:"未払残業代",lo:45,hi:80,sev:"danger",t:"勤怠システム+運行計画で恒久是正。遡及分は価格調整で処理",tm:"0〜6ヶ月"},
+  {n:"社保未加入",lo:12,hi:20,sev:"warning",t:"該当パートの加入手続きを是正計画に組込み",tm:"6〜12ヶ月"},
+  {n:"事故偶発債務",lo:0,hi:30,sev:"warning",t:"表明保証+特別補償(エスクロー)でカバー",tm:"契約時"},
+  {n:"簿外リース・保証",lo:20,hi:30,sev:"warning",t:"リース整理とオーナー保証の解除交渉",tm:"6〜12ヶ月"}]},
+ restructure:{val:8.1,gap:-21.9,ebitda:281,levers:[
+  {n:"3拠点→2拠点集約",v:25,kpi:"固定費率",r:"拠点固定費を圧縮、一時費用40百万円"},
+  {n:"不採算路線撤退",v:20,kpi:"路線別限界利益",r:"低単価スポット便から撤退"},
+  {n:"関連会社取引正常化",v:10,kpi:"外注単価",r:"市場比+15%の外注単価を是正"}],
+ ob:[
+  {n:"未払残業代",lo:45,hi:80,sev:"danger",t:"拠点集約と同時に長時間拘束の構造ごと解消",tm:"6〜18ヶ月"},
+  {n:"社保未加入",lo:12,hi:20,sev:"warning",t:"再編時の雇用契約見直しで一括是正",tm:"6〜12ヶ月"},
+  {n:"事故偶発債務",lo:0,hi:30,sev:"warning",t:"撤退路線分を確定処理し残存分をエスクロー",tm:"契約時"},
+  {n:"簿外リース・保証",lo:20,hi:30,sev:"warning",t:"撤退資産のリース解約で残高を圧縮",tm:"12ヶ月"}]},
+ strategy:{val:10.0,gap:-20.0,ebitda:290,levers:[
+  {n:"3PL・共同配送へ転換",v:40,kpi:"新規売上比率",r:"単純運送から高付加価値モデルへ"},
+  {n:"サーチャージ完全転嫁",v:15,kpi:"転嫁率",r:"未転嫁4割の荷主と再交渉"},
+  {n:"荷主分散 32%→20%",v:15,kpi:"依存度",r:"新規荷主開拓で集中リスクを低減"}],
+ ob:[
+  {n:"未払残業代",lo:45,hi:80,sev:"danger",t:"契約再交渉と併せ運行条件を見直し是正",tm:"12〜24ヶ月"},
+  {n:"社保未加入",lo:12,hi:20,sev:"warning",t:"待遇改定と一体で加入是正、採用力に転換",tm:"12ヶ月"},
+  {n:"事故偶発債務",lo:0,hi:30,sev:"warning",t:"荷主契約の賠償条項に上限を設定し裾を切る",tm:"再交渉時"},
+  {n:"簿外リース・保証",lo:20,hi:30,sev:"warning",t:"CoC条項整理と同時に保証解除を交渉",tm:"再交渉時"}]}};
+let cur="system",prev=null;
+const yen=v=>v.toFixed(1);
+function flash(el){el.style.transition="background .3s";el.style.background="var(--bg-warning)";setTimeout(()=>el.style.background="",1200);}
+function render(axis,animate){
+ const d=D[axis],p=prev?D[prev]:null;
+ document.querySelectorAll('#axisTabs button').forEach(b=>{
+  const on=b.dataset.axis===axis;
+  b.style.background=on?"var(--fill-primary)":"";b.style.color=on?"var(--on-primary)":"";b.style.borderColor=on?"var(--fill-primary)":"";});
+ document.getElementById('valNum').textContent=yen(d.val);
+ const vd=document.getElementById('valDiff');
+ if(p){const df=d.val-p.val;vd.textContent=(df>=0?"▲ +":"▼ ")+yen(df)+"億円";vd.style.color=df>=0?"var(--text-success)":"var(--text-danger)";}
+ document.getElementById('gapNum').textContent="−"+Math.abs(d.gap).toFixed(1);
+ document.getElementById('gapNum').style.color="var(--text-danger)";
+ if(animate){flash(document.getElementById('valNum').parentElement.parentElement);flash(document.getElementById('gapNum').parentElement);}
+ const seg=[["現状EBITDA",210,"c1"],["レバー",d.ebitda-210,"c2"],["×4.5x換算",0,"c3"],["負債・簿外",0,"c4"],["株式価値",0,"c5"]];
+ const ev=d.ebitda*4.5/100, debt=ev-d.val;
+ const bars=[{l:"EBITDA現状",v:210/29,c:"#888780"},{l:"レバー効果",v:(d.ebitda-210)/2.9,c:"#1D9E75"},{l:"事業価値",v:ev*0.72,c:"#378ADD"},{l:"負債・簿外",v:debt*0.72,c:"#E24B4A"},{l:"株式価値",v:d.val*7.2,c:"#534AB7"}];
+ const mx=Math.max(...bars.map(b=>b.v));
+ document.getElementById('bridge').innerHTML=bars.map(b=>`<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;"><div style="height:${Math.max(8,Math.round(b.v/mx*88))}px;background:${b.c};border-radius:4px 4px 0 0;"></div></div>`).join("");
+ document.getElementById('bridgeLabels').innerHTML=bars.map(b=>`<div style="flex:1;font-size:10px;color:var(--text-secondary);text-align:center;line-height:1.3;">${b.l}</div>`).join("");
+ if(animate)flash(document.getElementById('bridge'));
+ const lv=document.getElementById('levers');
+ lv.innerHTML=d.levers.map((L,i)=>`
+  <div class="lrow" data-i="${i}" style="border-top:0.5px solid var(--border);padding:8px 2px;cursor:pointer;">
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+    <span style="font-size:13px;color:var(--text-primary);">${L.n}</span>
+    <span style="font-size:13px;font-weight:500;color:var(--text-primary);white-space:nowrap;">+${L.v}<span style="font-size:11px;color:var(--text-muted);">百万</span></span>
+   </div>
+   <div style="height:6px;background:var(--surface-2);border-radius:3px;margin-top:5px;"><div style="height:6px;width:${Math.round(L.v/40*100)}%;background:#1D9E75;border-radius:3px;"></div></div>
+   <div class="ldet" style="max-height:0;overflow:hidden;transition:max-height .25s;"><p style="margin:6px 0 0;font-size:12px;color:var(--text-secondary);">${L.r}<br>KPI: ${L.kpi}</p></div>
+  </div>`).join("");
+ lv.querySelectorAll('.lrow').forEach(r=>r.onclick=()=>{const dd=r.querySelector('.ldet');dd.style.maxHeight=dd.style.maxHeight==="0px"||!dd.style.maxHeight?"60px":"0px";});
+ if(animate)flash(lv);
+ const ob=document.getElementById('obItems');
+ ob.innerHTML=d.ob.map((o,i)=>`
+  <div class="orow" data-i="${i}" style="border-top:0.5px solid var(--border);padding:8px 2px;cursor:pointer;">
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+    <span style="font-size:13px;color:var(--text-primary);"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--fill-${o.sev});margin-right:6px;"></span>${o.n}</span>
+    <span style="font-size:12px;color:var(--text-secondary);white-space:nowrap;">${o.lo}〜${o.hi}百万</span>
+   </div>
+   <div style="height:6px;background:var(--surface-2);border-radius:3px;margin-top:5px;position:relative;"><div style="position:absolute;left:${Math.round(o.lo/120*100)}%;width:${Math.max(4,Math.round((o.hi-o.lo)/120*100))}%;height:6px;background:var(--fill-${o.sev});border-radius:3px;opacity:.85;"></div></div>
+   <div class="odet" style="max-height:0;overflow:hidden;transition:max-height .25s;"><p style="margin:6px 0 0;font-size:12px;color:var(--text-secondary);">処置: ${o.t}<br>時期: ${o.tm}</p></div>
+  </div>`).join("");
+ ob.querySelectorAll('.orow').forEach(r=>r.onclick=()=>{const dd=r.querySelector('.odet');dd.style.maxHeight=dd.style.maxHeight==="0px"||!dd.style.maxHeight?"70px":"0px";});
+ if(animate){ob.querySelectorAll('.odet p').forEach(pp=>flash(pp));flash(ob);}
+}
+document.querySelectorAll('#axisTabs button').forEach(b=>b.onclick=()=>{if(b.dataset.axis===cur)return;prev=cur;cur=b.dataset.axis;render(cur,true);});
+render(cur,false);
+</script>

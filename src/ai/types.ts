@@ -1,102 +1,39 @@
-export type DdFormInput = {
-  companyName: string;
-  industry: string;
-  revenue: string;
-  employees: string;
-  challenges: string;
-  systems: string;
-  freeText: string;
-};
+import type { MaCompany } from "../data/ma-companies";
+import type { ExitComputed, ScenarioParams } from "./scenario/exit-model";
+import type { StrategyAxis } from "../data/ma-companies";
 
+/** AI（およびサンプル語り）の出力スキーマ — 設計書 §5 */
 export type DdDiagnosisResult = {
   diagnosis: string;
-  techOpportunity: string;
-  developmentOptions: { title: string; summary: string }[];
-  priority: { rank: number; item: string; rationale: string }[];
-  investmentImpact: { investment: string; impact: string; note?: string };
-  prototype: { name: string; scope: string; nextStep: string };
-  roadmap: { phase: string; items: string[] }[];
+  planNarrative: string;
+  leverDetails: { lever: string; rationale: string; kpi: string }[];
+  offbalancePlan: { item: string; treatment: string; timing: string }[];
+  exitStory: string;
+  roadmap: { phase1: string; phase2: string; phase3: string };
+  gapAdvice: string | null;
+  risks: string[];
 };
 
-export const EMPTY_FORM: DdFormInput = {
-  companyName: "",
-  industry: "",
-  revenue: "",
-  employees: "",
-  challenges: "",
-  systems: "",
-  freeText: "",
+export type DiagnosisContext = {
+  company: MaCompany;
+  params: ScenarioParams;
+  computed: ExitComputed;
 };
 
-export const SAMPLE_FORM: DdFormInput = {
-  companyName: "株式会社サンプルテック",
-  industry: "業務ソフトウェア / ITサービス",
-  revenue: "年商 12億円",
-  employees: "85名",
-  challenges:
-    "属人化した見積・提案、顧客データの分散、現場のDXテーマ選定が進まない",
-  systems: "Excel / 基幹（オンプレ） / Salesforce（一部）",
-  freeText: "まずは営業提案の品質とリードタイム短縮を優先したい。",
-};
-
-export const SAMPLE_RESULT: DdDiagnosisResult = {
-  diagnosis:
-    "提案・見積プロセスが属人化し、顧客データの分断により勝ちパターンの再現性が低い状態です。短期間で「提案下書きの標準化」から入るのが効果的です。",
-  techOpportunity:
-    "既存 Salesforce / Excel を起点に、業種テンプレート＋生成AIで提案ドラフトとリスク指摘を自動化する余地があります。フル刷新より「既存データに被せる」方が投資対効果が高いです。",
-  developmentOptions: [
-    {
-      title: "提案ドラフト AI（チャット／フォーム）",
-      summary: "企業プロファイルから提案骨子・差別化要点を即生成。",
-    },
-    {
-      title: "見積根拠のチェックリスト化",
-      summary: "過去案件の抜け漏れをルール＋LLMで指摘。",
-    },
-    {
-      title: "顧客データ突合ビュー",
-      summary: "基幹と CRM の差分を可視化し、商談準備時間を短縮。",
-    },
-  ],
-  priority: [
-    {
-      rank: 1,
-      item: "提案ドラフト AI の PoC",
-      rationale: "売上インパクトが分かりやすく、2〜4週間で体験可能。",
-    },
-    {
-      rank: 2,
-      item: "顧客データ最小統合",
-      rationale: "AIの入力品質を上げる土台になる。",
-    },
-    {
-      rank: 3,
-      item: "見積レビュー支援",
-      rationale: "属人化リスク低減だが、業務ルール整備が先。",
-    },
-  ],
-  investmentImpact: {
-    investment: "PoC 200〜400万円 / 3ヶ月",
-    impact: "提案リードタイム 30〜50%短縮、初回提案の再現性向上",
-    note: "本試算はサンプル診断であり、実案件では追加調査が必要です。",
+export const AXIS_TONE: Record<
+  StrategyAxis,
+  { roadmapStyle: string; riskHint: string }
+> = {
+  system: {
+    roadmapStyle: "導入→定着→効果測定",
+    riskHint: "定着しないリスク・CAPEX負担",
   },
-  prototype: {
-    name: "DD診断フォーム → 構造化カード",
-    scope: "企業7項目入力から診断・優先度・ロードマップを JSON 出力",
-    nextStep: "実顧客1社の匿名化データで精度検証し、営業同行デモへ",
+  restructure: {
+    roadmapStyle: "意思決定→実行→固定費確定",
+    riskHint: "一時費用・人員影響・レピュテーション",
   },
-  roadmap: [
-    {
-      phase: "0–4週",
-      items: ["入力項目確定", "プロンプト／JSONスキーマ固定", "社内パイロット"],
-    },
-    {
-      phase: "1–3ヶ月",
-      items: ["CRM連携", "提案テンプレ拡充", "KPIダッシュボード"],
-    },
-    {
-      phase: "3–6ヶ月",
-      items: ["見積レビュー拡張", "権限／監査ログ", "本番運用設計"],
-    },
-  ],
+  strategy: {
+    roadmapStyle: "仮説→検証→スケール",
+    riskHint: "時間リスク・実行力依存",
+  },
 };

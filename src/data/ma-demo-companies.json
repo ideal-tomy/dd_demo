@@ -1,0 +1,302 @@
+{
+  "schema_version": "1.0",
+  "unit": "百万円",
+  "note": "AXEON DD INTELLIGENCE デモ用サンプル企業データ。全社架空。金額はrange [min, max] で保持し、AIはこの範囲内でのみ数値を提示する。",
+  "companies": [
+    {
+      "id": "logi-towa",
+      "industry": "運送",
+      "name": "東和ロジスティクス株式会社",
+      "profile": {
+        "business": "一般貨物運送・倉庫保管",
+        "sites": "関東3拠点",
+        "ownership": "同族・非上場",
+        "revenue": 2800, "ordinary_income": 140, "employees": 180,
+        "key_dependency": { "label": "主要荷主依存", "value": "32%" },
+        "extra": { "label": "関連会社", "value": "東和商事" }
+      },
+      "profile_prior": "労働集約・多拠点・シフト制・特定荷主依存・同族経営。未払残業代/社保/オーナー保証の簿外債務が出やすい型。",
+      "industry_priors": [
+        "ドライバー × デジタコ × 長時間拘束 → 未払残業代",
+        "パート・有期 × 週30h超 → 社会保険の未加入",
+        "運送業 × 事故 → 訴訟・損害賠償の偶発債務",
+        "同族 × 関連会社 → オーナーの簿外・個人保証",
+        "特定荷主依存 × 基本契約 → 支配権変更(CoC)条項"
+      ],
+      "data_room": ["デジタコ・運行記録(3期/120名)", "給与台帳(36ヶ月)", "勤怠データ(打刻/180名)", "就業規則・賃金規程", "従業員名簿(180行)", "荷主別売上・基本契約書", "車両台帳・リース契約", "事故・クレーム記録", "関連会社取引明細", "借入金・保証明細", "決算書3期"],
+      "financials": { "ebitda": 210, "depreciation": 60, "owner_addback": 10, "net_debt": 450 },
+      "dd_findings": {
+        "quantitative": [
+          { "item": "未払残業代(デジタコ×給与台帳突合)", "estimate": [45, 80], "severity": "high" },
+          { "item": "社会保険未加入(パート週30h超該当)", "estimate": [12, 20], "severity": "mid" },
+          { "item": "事故関連の訴訟・賠償偶発債務", "estimate": [0, 30], "severity": "mid" },
+          { "item": "簿外リース・オーナー個人保証残", "estimate": [20, 30], "severity": "mid" }
+        ],
+        "discovered": [
+          "主要荷主2社の基本契約にCoC条項(株主変更時の事前承諾)",
+          "関連会社(東和商事)への外注単価が市場比+15%",
+          "燃料サーチャージが荷主の6割にしか転嫁されていない"
+        ]
+      },
+      "valueup_levers": {
+        "system": [
+          { "lever": "AI配車・動態管理システム導入", "ebitda_impact": [25, 40], "months": 12, "capex": 30 },
+          { "lever": "倉庫WMS+ハンディ導入で庫内生産性改善", "ebitda_impact": [10, 18], "months": 9, "capex": 15 },
+          { "lever": "勤怠デジタル化+運行計画で残業構造を恒久是正", "ebitda_impact": [5, 10], "months": 6, "capex": 8 }
+        ],
+        "restructure": [
+          { "lever": "不採算路線・低単価スポット便からの撤退", "ebitda_impact": [15, 25], "months": 6, "onetime_cost": 10 },
+          { "lever": "3拠点→2拠点への集約", "ebitda_impact": [20, 30], "months": 18, "onetime_cost": 40 },
+          { "lever": "関連会社取引の市場価格への正常化", "ebitda_impact": [8, 12], "months": 6, "onetime_cost": 0 }
+        ],
+        "strategy": [
+          { "lever": "荷主分散(依存32%→20%)と新規荷主開拓", "ebitda_impact": [10, 20], "months": 24, "capex": 5 },
+          { "lever": "単純運送から3PL・共同配送モデルへ転換", "ebitda_impact": [30, 50], "months": 30, "capex": 25 },
+          { "lever": "燃料サーチャージの全荷主への完全転嫁", "ebitda_impact": [12, 18], "months": 6, "capex": 0 }
+        ]
+      },
+      "offbalance_treatment": {
+        "system": "未払残業は勤怠システム+運行計画で恒久是正(是正投資型)。遡及分は譲渡価格の調整項目として処理。",
+        "restructure": "拠点集約・路線撤退と同時に長時間拘束の構造自体を解消。事故偶発は表明保証+特別補償(エスクロー)でカバー。",
+        "strategy": "荷主契約の再交渉時にCoC条項の整理とサーチャージ転嫁を同時に実施し、依存リスクと収益性を一体で改善。"
+      },
+      "exit": { "ebitda_multiple": [4.0, 5.0], "buyer_types": ["大手3PL", "同業中堅(水平統合)", "物流特化ファンド"], "note": "ドライバー確保力と荷主分散度がマルチプル評価の鍵。" }
+    },
+    {
+      "id": "mfg-seiwa",
+      "industry": "製造",
+      "name": "セイワ精工株式会社",
+      "profile": {
+        "business": "自動車部品の精密加工・表面処理",
+        "sites": "2拠点",
+        "ownership": "同族・非上場",
+        "revenue": 3200, "ordinary_income": 180, "employees": 140,
+        "key_dependency": { "label": "主要顧客依存", "value": "41%" },
+        "extra": { "label": "主力工場", "value": "築38年" }
+      },
+      "profile_prior": "交替勤務・古い工場用地・熟練工の高齢化・特定顧客依存。未払残業代に加え、土壌汚染や製品リコール、原状回復といった製造業ならではの簿外債務が出やすい型。",
+      "industry_priors": [
+        "交替勤務 × 段取り時間 → サービス残業・未払残業代",
+        "自動車部品 × 市場不具合 → リコール・製品保証の偶発債務",
+        "古い工場用地 × メッキ・有機溶剤 → 土壌汚染・環境債務",
+        "熟練工の高齢化 × 退職金規程 → 退職給付債務の引当不足",
+        "工場賃借 × 原状回復条項 → 資産除去債務"
+      ],
+      "data_room": ["勤怠・入退場ログ(3期/140名)", "給与台帳(36ヶ月)", "就業規則・賃金規程", "従業員名簿(140行)", "品質会議・是正処置議事録", "顧客別売上・供給契約書", "設備台帳・修繕履歴", "環境測定記録・PRTR届出", "退職金規程・引当明細", "土地建物の賃貸借契約", "決算書3期"],
+      "financials": { "ebitda": 290, "depreciation": 95, "owner_addback": 15, "net_debt": 620 },
+      "dd_findings": {
+        "quantitative": [
+          { "item": "未払残業代(段取り時間の未計上)", "estimate": [30, 55], "severity": "high" },
+          { "item": "土壌汚染調査・対策費(メッキライン下)", "estimate": [40, 120], "severity": "high" },
+          { "item": "リコール・製品保証の偶発債務", "estimate": [0, 60], "severity": "mid" },
+          { "item": "退職給付引当不足(熟練工の高齢化)", "estimate": [35, 50], "severity": "mid" }
+        ],
+        "discovered": [
+          "主要顧客の供給契約に品質起因の無限責任に近い賠償条項",
+          "熟練工5名(平均62歳)に技能が集中、技能伝承計画なし",
+          "築38年の主力工場は耐震診断未実施"
+        ]
+      },
+      "valueup_levers": {
+        "system": [
+          { "lever": "生産管理MES+実績自動収集の導入", "ebitda_impact": [20, 35], "months": 15, "capex": 45 },
+          { "lever": "AI見積・原価管理システムで受注採算を可視化", "ebitda_impact": [10, 18], "months": 9, "capex": 12 },
+          { "lever": "老朽設備の予知保全でダウンタイム削減", "ebitda_impact": [8, 15], "months": 12, "capex": 20 }
+        ],
+        "restructure": [
+          { "lever": "低収益の表面処理ラインを縮小・外注化", "ebitda_impact": [18, 28], "months": 12, "onetime_cost": 60 },
+          { "lever": "2拠点の生産を主力工場へ集約", "ebitda_impact": [15, 25], "months": 18, "onetime_cost": 60 },
+          { "lever": "小口・赤字顧客の選別と値上げ交渉", "ebitda_impact": [10, 15], "months": 9, "onetime_cost": 0 }
+        ],
+        "strategy": [
+          { "lever": "EV・電装部品分野への新規開拓(依存41%是正)", "ebitda_impact": [25, 45], "months": 30, "capex": 30 },
+          { "lever": "表面処理技術を外販する受託事業の立ち上げ", "ebitda_impact": [20, 35], "months": 24, "capex": 25 },
+          { "lever": "全顧客との価格改定・長期供給契約化", "ebitda_impact": [15, 20], "months": 12, "capex": 0 }
+        ]
+      },
+      "offbalance_treatment": {
+        "system": "MESで実労働を正確に捕捉し残業を是正。品質トレーサビリティ強化でリコール偶発の低減を買い手に説明可能にする。",
+        "restructure": "表面処理ライン縮小と同時に土壌汚染対策を実施し、環境債務を『処置済み』としてEXIT時のディスカウント要因を除去。",
+        "strategy": "顧客契約の再交渉で賠償条項の上限設定を獲得し、偶発債務の裾を切る。退職給付は技能伝承計画とセットで段階的に引当。"
+      },
+      "exit": { "ebitda_multiple": [4.5, 5.5], "buyer_types": ["Tier1部品メーカー", "表面処理同業(技術目的)", "製造業ロールアップファンド"], "note": "環境債務の処置状況と技能伝承の道筋がディスカウント幅を左右。" }
+    },
+    {
+      "id": "care-hidamari",
+      "industry": "介護",
+      "name": "ひだまりケア株式会社",
+      "profile": {
+        "business": "訪問介護・通所介護 多拠点運営",
+        "sites": "12事業所",
+        "ownership": "同族・非上場",
+        "revenue": 2600, "ordinary_income": 120, "employees": 320,
+        "key_dependency": { "label": "非常勤比率", "value": "58%" },
+        "extra": { "label": "事業所", "value": "12拠点" }
+      },
+      "profile_prior": "訪問の移動・記録時間、非常勤の多さ、人員配置基準と加算——未払残業代・社保に加え、介護報酬の過誤請求による返還リスクが出やすい型。",
+      "industry_priors": [
+        "訪問・直行直帰 × 移動/記録時間 → 未払残業代",
+        "非常勤多数 × 加入要件該当 → 社会保険の未加入",
+        "人員配置基準 × 加算算定 → 過誤請求・報酬返還リスク",
+        "処遇改善加算 × 配分実態 → 配分不備による返還リスク",
+        "利用者の転倒・事故 → 損害賠償の偶発債務"
+      ],
+      "data_room": ["勤怠・シフト(3期/320名)", "訪問記録・サービス提供記録(システム)", "給与台帳(36ヶ月)", "従業員名簿(320行)", "社会保険加入者リスト(CSV)", "介護報酬請求データ(国保連)", "人員配置・加算算定根拠資料", "処遇改善加算の実績報告", "事故・ヒヤリハット記録", "指定申請・運営規程", "決算書3期"],
+      "financials": { "ebitda": 165, "depreciation": 30, "owner_addback": 15, "net_debt": 180 },
+      "dd_findings": {
+        "quantitative": [
+          { "item": "未払残業代(移動時間・記録時間の未計上)", "estimate": [35, 60], "severity": "high" },
+          { "item": "社会保険未加入(非常勤の加入要件該当者)", "estimate": [18, 30], "severity": "mid" },
+          { "item": "介護報酬の過誤請求・返還リスク(配置基準)", "estimate": [25, 90], "severity": "high" },
+          { "item": "処遇改善加算の配分不備による返還", "estimate": [10, 25], "severity": "mid" }
+        ],
+        "discovered": [
+          "2事業所でサービス提供責任者の兼務が基準ギリギリ",
+          "訪問記録が紙とシステムに二重管理され突合不能な期間あり",
+          "稼働率60%未満の事業所が3拠点"
+        ]
+      },
+      "valueup_levers": {
+        "system": [
+          { "lever": "記録・請求システム統合(返還リスク低減+請求漏れ回収)", "ebitda_impact": [12, 20], "months": 9, "capex": 20 },
+          { "lever": "AIシフト最適化で配置基準と人件費を両立", "ebitda_impact": [8, 14], "months": 6, "capex": 10 },
+          { "lever": "訪問ルート最適化で移動時間を圧縮", "ebitda_impact": [10, 16], "months": 9, "capex": 8 }
+        ],
+        "restructure": [
+          { "lever": "稼働率の低い3事業所の統廃合", "ebitda_impact": [15, 22], "months": 12, "onetime_cost": 25 },
+          { "lever": "不採算サービス種別の縮小・撤退", "ebitda_impact": [8, 12], "months": 9, "onetime_cost": 10 },
+          { "lever": "本部管理機能の集約とバックオフィス共通化", "ebitda_impact": [6, 10], "months": 12, "onetime_cost": 8 }
+        ],
+        "strategy": [
+          { "lever": "看護小規模多機能など高単価サービスへの転換", "ebitda_impact": [20, 35], "months": 30, "capex": 60 },
+          { "lever": "採用・定着投資で非常勤依存を適正化(紹介料削減)", "ebitda_impact": [10, 18], "months": 18, "capex": 15 },
+          { "lever": "近隣同業の小規模M&Aによるドミナント強化", "ebitda_impact": [15, 30], "months": 24, "capex": 100 }
+        ]
+      },
+      "offbalance_treatment": {
+        "system": "記録・請求の統合で過誤請求の再発を構造的に止め、過年度分は自主点検→自主返還で行政処分リスクを回避。",
+        "restructure": "統廃合対象の事業所から先行して配置基準・加算の総点検を実施し、返還額を確定させてから譲渡価格に反映。",
+        "strategy": "処遇改善加算の配分を賃金制度改定とセットで是正し、採用力の向上と返還リスク解消を同時に実現。"
+      },
+      "exit": { "ebitda_multiple": [5.0, 7.0], "buyer_types": ["大手介護チェーン", "医療法人グループ", "ヘルスケア特化ファンド"], "note": "行政処分歴の有無と自主点検の実施状況が価格に直結。" }
+    },
+    {
+      "id": "const-aoba",
+      "industry": "建設",
+      "name": "アオバ建設工業株式会社",
+      "profile": {
+        "business": "土木・建築の総合工事業(公共6:民間4)",
+        "sites": "本社+資材センター",
+        "ownership": "同族・非上場",
+        "revenue": 3500, "ordinary_income": 160, "employees": 95,
+        "key_dependency": { "label": "公共工事依存", "value": "58%" },
+        "extra": { "label": "有資格者", "value": "監理技術者8名(平均56歳)" }
+      },
+      "profile_prior": "重層下請・工事進行基準・有資格者の高齢化。未払残業に加え、偽装請負・一人親方の労災遡及、契約不適合(瑕疵)の偶発債務、経審維持が論点になりやすい型。",
+      "industry_priors": [
+        "現場常駐 × 直行直帰 → 現場手当と未払残業の混在",
+        "重層下請 × 一人親方 → 偽装請負・労災の遡及リスク",
+        "工事進行基準 × 原価見積 → 収益認識のブレ・赤字工事の後出し",
+        "引渡済み物件 × 契約不適合責任 → 補修・賠償の偶発債務",
+        "有資格者の高齢化 × 経審 → 許可・受注能力の毀損リスク"
+      ],
+      "data_room": ["工事台帳・実行予算(3期/工事別)", "給与台帳(36ヶ月)", "勤怠データ(95名)", "下請契約書・支払明細", "一人親方・協力会社リスト", "完成工事の引渡・アフター記録", "経審結果・許可通知", "資格者名簿・選任状況", "施工不良・クレーム対応記録", "遊休資産(資材置場)明細", "決算書3期"],
+      "financials": { "ebitda": 200, "depreciation": 30, "owner_addback": 10, "net_debt": 150 },
+      "dd_findings": {
+        "quantitative": [
+          { "item": "未払残業代(現場手当への込み処理)", "estimate": [25, 45], "severity": "mid" },
+          { "item": "偽装請負・一人親方の労災/社保遡及", "estimate": [15, 40], "severity": "high" },
+          { "item": "契約不適合(瑕疵)の補修偶発債務", "estimate": [0, 80], "severity": "high" },
+          { "item": "建退共・退職金の積立不足", "estimate": [10, 20], "severity": "low" }
+        ],
+        "discovered": [
+          "進行中の大型工事1件で実行予算超過の兆候(原価率93%)",
+          "監理技術者8名中5名が5年以内に定年到達",
+          "簿価の低い資材置場2箇所が遊休状態(含み益あり)"
+        ]
+      },
+      "valueup_levers": {
+        "system": [
+          { "lever": "施工管理アプリ+原価リアルタイム把握", "ebitda_impact": [18, 30], "months": 12, "capex": 25 },
+          { "lever": "見積・実行予算の標準化システム", "ebitda_impact": [10, 18], "months": 9, "capex": 10 },
+          { "lever": "写真管理・書類作成の自動化で現場残業削減", "ebitda_impact": [6, 12], "months": 6, "capex": 8 }
+        ],
+        "restructure": [
+          { "lever": "赤字続きの小型リフォーム部門から撤退", "ebitda_impact": [12, 20], "months": 9, "onetime_cost": 15 },
+          { "lever": "協力会社網の再編と重層構造の是正", "ebitda_impact": [8, 15], "months": 12, "onetime_cost": 5 },
+          { "lever": "遊休資材置場2箇所の売却(一時収入)", "ebitda_impact": [0, 0], "months": 6, "onetime_gain": [30, 50] }
+        ],
+        "strategy": [
+          { "lever": "維持修繕・インフラ更新のストック型受注へシフト", "ebitda_impact": [20, 35], "months": 30, "capex": 10 },
+          { "lever": "民間元請比率の向上と選別受注", "ebitda_impact": [12, 22], "months": 24, "capex": 5 },
+          { "lever": "若手資格者の育成・採用投資(経審維持)", "ebitda_impact": [5, 10], "months": 36, "capex": 20 }
+        ]
+      },
+      "offbalance_treatment": {
+        "system": "原価のリアルタイム把握で赤字工事の後出しを防止し、進行基準の見積精度を買い手に示す。労務はアプリ打刻で是正。",
+        "restructure": "撤退部門の引渡済み案件は契約不適合の残存責任を洗い出し、エスクローまたは保険(瑕疵担保責任保険)でカバー。",
+        "strategy": "一人親方の雇用化・請負適正化を段階実施し、遡及リスクを将来に向けて遮断。資格者育成計画を経審評価の維持策として提示。"
+      },
+      "exit": { "ebitda_multiple": [3.5, 4.5], "buyer_types": ["地域ゼネコン(水平統合)", "インフラメンテ企業", "事業承継ファンド"], "note": "資格者の年齢構成と経審維持の道筋がマルチプルの上限を決める。" }
+    },
+    {
+      "id": "retail-hamaya",
+      "industry": "小売",
+      "name": "株式会社ハマヤストア",
+      "profile": {
+        "business": "食品スーパー 地域チェーン",
+        "sites": "8店舗(全店賃借)",
+        "ownership": "同族・非上場",
+        "revenue": 4500, "ordinary_income": 90, "employees": 380,
+        "key_dependency": { "label": "非正規比率", "value": "72%" },
+        "extra": { "label": "店舗", "value": "8店舗・平均築22年" }
+      },
+      "profile_prior": "多店舗・パート主体・全店賃借・低利益率。パート社保に加え、原状回復(資産除去債務)の計上漏れ、ポイント・商品券の引当不足、廃棄ロスが論点になりやすい型。",
+      "industry_priors": [
+        "パート多数 × 週20h/30h基準 → 社会保険の未加入",
+        "全店賃借 × 原状回復条項 → 資産除去債務の計上漏れ",
+        "自社ポイント・商品券 × 未使用残高 → 引当不足",
+        "生鮮 × 発注精度 → 廃棄ロス(改善余地=収益機会)",
+        "冷凍冷蔵設備の老朽化 → 更新CAPEXの先送り"
+      ],
+      "data_room": ["店舗別PL(3期/8店)", "給与台帳(36ヶ月)", "勤怠データ(380名)", "パート雇用契約・シフト実績", "店舗賃貸借契約書(8店)", "ポイント・商品券の発行/未使用残高", "廃棄ロス・棚卸差異データ", "設備台帳・修繕履歴(冷設)", "POS・ID-POSデータ", "仕入先・帳合契約", "決算書3期"],
+      "financials": { "ebitda": 190, "depreciation": 90, "owner_addback": 10, "net_debt": 520 },
+      "dd_findings": {
+        "quantitative": [
+          { "item": "社会保険未加入(パートの加入要件該当者)", "estimate": [30, 55], "severity": "high" },
+          { "item": "資産除去債務(全8店の原状回復)の計上漏れ", "estimate": [40, 70], "severity": "high" },
+          { "item": "ポイント・商品券の引当不足", "estimate": [8, 15], "severity": "low" },
+          { "item": "冷凍冷蔵設備の更新繰延(実質的な将来債務)", "estimate": [60, 100], "severity": "mid" }
+        ],
+        "discovered": [
+          "8店中2店が3期連続の店舗赤字",
+          "廃棄ロス率が業界平均の約1.6倍(改善余地=収益機会)",
+          "主力2店舗の賃貸借が5年内に契約更改、賃料増額リスク"
+        ]
+      },
+      "valueup_levers": {
+        "system": [
+          { "lever": "AI需要予測発注で廃棄ロスを半減", "ebitda_impact": [25, 40], "months": 12, "capex": 35 },
+          { "lever": "セルフレジ・省人化投資", "ebitda_impact": [15, 25], "months": 12, "capex": 60 },
+          { "lever": "ID-POS活用の販促最適化", "ebitda_impact": [10, 18], "months": 9, "capex": 12 }
+        ],
+        "restructure": [
+          { "lever": "3期連続赤字の2店舗閉鎖", "ebitda_impact": [20, 30], "months": 12, "onetime_cost": 80 },
+          { "lever": "深夜営業時間帯の縮小", "ebitda_impact": [8, 12], "months": 3, "onetime_cost": 0 },
+          { "lever": "PB拡大・産地直取引でグロスマージン改善", "ebitda_impact": [12, 20], "months": 18, "onetime_cost": 5 }
+        ],
+        "strategy": [
+          { "lever": "惣菜・生鮮特化型フォーマットへの業態転換", "ebitda_impact": [30, 50], "months": 36, "capex": 120 },
+          { "lever": "ネットスーパー・宅配の立ち上げ", "ebitda_impact": [10, 25], "months": 24, "capex": 50 },
+          { "lever": "ドミナントエリア内の小型店出店", "ebitda_impact": [15, 30], "months": 30, "capex": 90 }
+        ]
+      },
+      "offbalance_treatment": {
+        "system": "省人化とシフト最適化でパートの労働時間を適正化し、社保加入を計画的に実施(コスト増はロス削減益で吸収)。",
+        "restructure": "閉鎖2店舗の原状回復を先行実施して資産除去債務を確定・消化し、残存店舗分のみを価格調整対象に絞る。",
+        "strategy": "業態転換の改装と同時に冷設更新を実施し、繰延CAPEXの将来債務を投資計画に統合して買い手の不確実性を除去。"
+      },
+      "exit": { "ebitda_multiple": [4.0, 5.0], "buyer_types": ["大手食品スーパー(エリア補完)", "地域スーパー連合", "小売再生ファンド"], "note": "店舗別収益の透明性と賃貸借の更改条件がDD初期の焦点。" }
+    }
+  ]
+}

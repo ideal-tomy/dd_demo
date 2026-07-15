@@ -4,54 +4,58 @@ function asString(v: unknown, fallback = ""): string {
   return typeof v === "string" ? v : fallback;
 }
 
-function asOptions(v: unknown): DdDiagnosisResult["developmentOptions"] {
+function asLeverDetails(v: unknown): DdDiagnosisResult["leverDetails"] {
   if (!Array.isArray(v)) return [];
   return v
     .map((item) => {
       if (!item || typeof item !== "object") return null;
       const o = item as Record<string, unknown>;
-      const title = asString(o.title);
-      const summary = asString(o.summary);
-      if (!title) return null;
-      return { title, summary };
+      const lever = asString(o.lever);
+      if (!lever) return null;
+      return {
+        lever,
+        rationale: asString(o.rationale),
+        kpi: asString(o.kpi),
+      };
     })
-    .filter((x): x is { title: string; summary: string } => Boolean(x));
+    .filter((x): x is DdDiagnosisResult["leverDetails"][number] => Boolean(x));
 }
 
-function asPriority(v: unknown): DdDiagnosisResult["priority"] {
+function asOffbalancePlan(v: unknown): DdDiagnosisResult["offbalancePlan"] {
   if (!Array.isArray(v)) return [];
   return v
-    .map((item, i) => {
+    .map((item) => {
       if (!item || typeof item !== "object") return null;
       const o = item as Record<string, unknown>;
       const itemText = asString(o.item);
       if (!itemText) return null;
       return {
-        rank: typeof o.rank === "number" ? o.rank : i + 1,
         item: itemText,
-        rationale: asString(o.rationale),
+        treatment: asString(o.treatment),
+        timing: asString(o.timing),
       };
     })
-    .filter((x): x is DdDiagnosisResult["priority"][number] => Boolean(x));
+    .filter((x): x is DdDiagnosisResult["offbalancePlan"][number] => Boolean(x));
+}
+
+function asRisks(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.map((x) => asString(x)).filter(Boolean).slice(0, 5);
 }
 
 function asRoadmap(v: unknown): DdDiagnosisResult["roadmap"] {
-  if (!Array.isArray(v)) return [];
-  return v
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const o = item as Record<string, unknown>;
-      const phase = asString(o.phase);
-      if (!phase) return null;
-      const items = Array.isArray(o.items)
-        ? o.items.map((x) => asString(x)).filter(Boolean)
-        : [];
-      return { phase, items };
-    })
-    .filter((x): x is DdDiagnosisResult["roadmap"][number] => Boolean(x));
+  if (!v || typeof v !== "object") {
+    return { phase1: "", phase2: "", phase3: "" };
+  }
+  const o = v as Record<string, unknown>;
+  return {
+    phase1: asString(o.phase1),
+    phase2: asString(o.phase2),
+    phase3: asString(o.phase3),
+  };
 }
 
-/** Parse model text → DD structured result. Throws on total failure. */
+/** Parse model text → value-up structured result. */
 export function parseDdDiagnosisText(text: string): DdDiagnosisResult {
   const trimmed = text.trim();
   let raw: unknown;
@@ -71,30 +75,21 @@ export function parseDdDiagnosisText(text: string): DdDiagnosisResult {
     throw new Error("診断結果の形式が不正です。");
   }
   const o = raw as Record<string, unknown>;
-  const investment =
-    o.investmentImpact && typeof o.investmentImpact === "object"
-      ? (o.investmentImpact as Record<string, unknown>)
-      : {};
-  const prototype =
-    o.prototype && typeof o.prototype === "object"
-      ? (o.prototype as Record<string, unknown>)
-      : {};
+
+  const gapRaw = o.gap_advice ?? o.gapAdvice;
+  const gapAdvice =
+    gapRaw === null || gapRaw === undefined
+      ? null
+      : asString(gapRaw) || null;
 
   return {
     diagnosis: asString(o.diagnosis, "（診断文なし）"),
-    techOpportunity: asString(o.techOpportunity),
-    developmentOptions: asOptions(o.developmentOptions),
-    priority: asPriority(o.priority),
-    investmentImpact: {
-      investment: asString(investment.investment),
-      impact: asString(investment.impact),
-      note: asString(investment.note) || undefined,
-    },
-    prototype: {
-      name: asString(prototype.name),
-      scope: asString(prototype.scope),
-      nextStep: asString(prototype.nextStep),
-    },
+    planNarrative: asString(o.plan_narrative ?? o.planNarrative),
+    leverDetails: asLeverDetails(o.lever_details ?? o.leverDetails),
+    offbalancePlan: asOffbalancePlan(o.offbalance_plan ?? o.offbalancePlan),
+    exitStory: asString(o.exit_story ?? o.exitStory),
     roadmap: asRoadmap(o.roadmap),
+    gapAdvice,
+    risks: asRisks(o.risks),
   };
 }

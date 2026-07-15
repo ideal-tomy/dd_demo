@@ -1,7 +1,6 @@
 import { getPersona } from "../data/index.js";
 import {
   getState,
-  getCurrentKey,
   judgmentKey,
   setCurrentPhase,
 } from "./state.js";
@@ -10,13 +9,21 @@ import { switchPhase } from "./phases.js";
 import { runAnalysis } from "./analysis.js";
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const mqMobile = window.matchMedia("(max-width: 820px)");
 const DEMO_KEY = "logistics";
-// 各スライドの表示秒数の倍率（ゆっくり読めるように 1.5 倍 ≒ 全体90秒）。
+// 各スライドの表示秒数の倍率（ゆっくり読めるように 1.5 倍）。
 const DWELL_MULT = 1.5;
+
+function isMobile() {
+  return mqMobile.matches;
+}
 
 /**
  * 各スライドは決定論的に状態を組み立てる（seek でどこへでも飛べる）。
  * animate は「再生中に前方へ進んだとき」だけ実行される演出。
+ *
+ * dim: "soft" | "none"  — スポット外の暗幕
+ * captionMode: "compact" | "full" | "hidden" — 説明シートの出し方
  */
 const STEPS = [
   {
@@ -25,7 +32,9 @@ const STEPS = [
     phase: "dd",
     ran: false,
     target: null,
-    autoMs: 4200,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 3800,
   },
   {
     t: "① 対象企業をDBから選択",
@@ -33,7 +42,9 @@ const STEPS = [
     phase: "dd",
     ran: false,
     target: () => document.getElementById("industryTabs"),
-    autoMs: 4600,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 4200,
   },
   {
     t: "事前知識（prior）とデータルーム",
@@ -41,20 +52,57 @@ const STEPS = [
     phase: "dd",
     ran: false,
     target: () => document.querySelector(".setup"),
-    autoMs: 5200,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 4600,
   },
   {
     t: "② 解析を実行",
-    b: "複数ソースを機械的に突合し、矛盾・言語・時系列の3種シグナルを抽出します。サンプリングではなく全数解析です。",
+    b: "ここを押すと、複数ソースを機械的に突合し、矛盾・言語・時系列の3種シグナルを抽出します。サンプリングではなく全数解析です。",
     phase: "dd",
     ran: false,
     target: () => document.getElementById("run"),
-    autoMs: 1000,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 3200,
+  },
+  {
+    t: "解析中 — シグナル抽出",
+    b: "データルームの各ソースを突合しています。結果が下に現れます。",
+    phase: "dd",
+    ran: false,
+    target: () => document.getElementById("scan"),
+    dim: "none",
+    captionMode: "hidden",
+    autoMs: 800,
     animate: async () => {
+      setCaptionMode("hidden");
+      applyDim("none");
       const p = getCurrentPersona();
+      // 解析開始前はボタン周辺を見せ、scan 表示後に追従
+      const runBtn = document.getElementById("run");
+      if (runBtn) {
+        scrollEl(runBtn);
+        positionSpotEl(runBtn);
+      }
       runAnalysis(p);
+      await waitFor(() => {
+        const scan = document.getElementById("scan");
+        return scan && scan.classList.contains("on");
+      }, 2000);
+      await raf();
+      const scan = document.getElementById("scan");
+      if (scan) {
+        scrollEl(scan);
+        positionSpotEl(scan);
+      }
       await waitFor(() => getState(p.key).ran, 14000);
-      await delay(reduce ? 0 : 700);
+      const flags = document.getElementById("flags");
+      if (flags) {
+        scrollEl(flags);
+        positionSpotEl(flags);
+      }
+      await delay(reduce ? 0 : isMobile() ? 500 : 700);
     },
   },
   {
@@ -62,20 +110,65 @@ const STEPS = [
     b: "機械的に金額を推計できる「定量査定」と、突合で気づく「発見系」を同時に提示。どちらも根拠つきで並びます。",
     phase: "dd",
     ran: true,
-    target: () => document.getElementById("flags"),
-    autoMs: 5400,
+    target: () => document.getElementById("summary"),
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 4200,
   },
   {
-    t: "なぜフラグしたか ― 根拠と計算の中身",
-    b: "フラグを開くと、突合の根拠チェーンとAIの推論を確認できます。定量項目は計算式と入力値まで開示し、説明可能性を担保します。",
+    t: "定量査定 — 金額を機械推計",
+    b: "矛盾シグナルから、推定エクスポージャー（簿外債務の幅）を機械的に算出した項目です。",
     phase: "dd",
     ran: true,
     target: () => document.querySelector(".flag.flag-quant"),
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 4000,
+  },
+  {
+    t: "発見系 — 突合・言語で気づくリスク",
+    b: "金額を一律推計しにくいが、契約・言語・時系列の突合から発見したリスク項目です。",
+    phase: "dd",
+    ran: true,
+    target: () => document.querySelector(".flag.flag-disc"),
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 4000,
+  },
+  {
+    t: "なぜフラグしたか ― 根拠と推論",
+    b: "突合の根拠チェーンとAIの推論を順に確認します。定量項目は計算式と入力値まで開示し、説明可能性を担保します。",
+    phase: "dd",
+    ran: true,
+    target: () => document.querySelector(".flag.flag-quant"),
+    dim: "soft",
+    captionMode: "compact",
     after: () => {
       const f = document.querySelector(".flag.flag-quant");
       if (f && !f.classList.contains("open")) f.classList.add("open");
     },
-    autoMs: 6000,
+    autoMs: 1200,
+    animate: async () => {
+      setCaptionMode("hidden");
+      const flag = document.querySelector(".flag.flag-quant");
+      if (!flag) return;
+      if (!flag.classList.contains("open")) flag.classList.add("open");
+      await raf();
+      const parts = [".srcwrap", ".gap", ".flagnode", ".inf"];
+      const partDelay = reduce ? 0 : isMobile() ? 900 : 1100;
+      for (const sel of parts) {
+        if (!playing) return;
+        const el = flag.querySelector(sel);
+        if (!el) continue;
+        scrollEl(el);
+        positionSpotEl(el);
+        await delay(partDelay);
+      }
+      // 最後はフラグ全体に戻す
+      scrollEl(flag);
+      positionSpotEl(flag);
+      setCaptionMode(STEPS[idx].captionMode || "compact");
+    },
   },
   {
     t: "③ 人間が検証して確定",
@@ -84,7 +177,9 @@ const STEPS = [
     ran: true,
     judged: true,
     target: () => document.getElementById("summary"),
-    autoMs: 5600,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 4800,
   },
   {
     t: "④ PMI ― 最初の100日プラン",
@@ -93,7 +188,9 @@ const STEPS = [
     ran: true,
     judged: true,
     target: () => document.getElementById("phasePmi"),
-    autoMs: 6000,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 5200,
   },
   {
     t: "⑤ バリューアップ ― 実態EBITDAの改善",
@@ -102,7 +199,9 @@ const STEPS = [
     ran: true,
     judged: true,
     target: () => document.getElementById("phaseValueup"),
-    autoMs: 6000,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 5200,
   },
   {
     t: "⑥ EXIT準備 ― EVブリッジ",
@@ -111,16 +210,21 @@ const STEPS = [
     ran: true,
     judged: true,
     target: () => document.getElementById("phaseExit"),
-    autoMs: 6000,
+    dim: "soft",
+    captionMode: "compact",
+    autoMs: 5200,
   },
   {
-    t: "DDからEXITまで、一つのツールで一気通貫",
-    b: "発見した簿外債務が、価格・是正・価値向上・売却ストーリーまで貫通します。これが AXEON の「指摘で止まらない」DDです。",
+    t: "DDからAIを参加させ、EXITまで一気通貫に",
+    b: "DDからAIを参加させることで、EXITまでAI活用と機械学習の環境を整えられます。分析ツールとしての活用から始まり、そのままEXITまでを強力にサポートすること——それが、最も効率の良いAIの参加タイミングです。",
     phase: "exit",
     ran: true,
     judged: true,
     target: null,
-    autoMs: 5200,
+    dim: "none",
+    captionMode: "compact",
+    bright: true,
+    autoMs: 7200,
   },
 ];
 
@@ -129,6 +233,8 @@ let idx = 0;
 let playing = false;
 let busy = false;
 let onResize = null;
+let sheetExpanded = false;
+let activeSpotEl = null;
 
 // rAF ベースの滞在タイマー（一時停止／再開とプログレスバーを同期）
 let rafId = null;
@@ -221,24 +327,145 @@ function cancelDwell() {
   elapsedBeforePause = 0;
 }
 
+function chromeHeight() {
+  if (!root) return 0;
+  const chrome = root.querySelector(".tour-chrome");
+  return chrome ? chrome.getBoundingClientRect().height : 0;
+}
+
+function updateChromeVar() {
+  const h = chromeHeight();
+  document.documentElement.style.setProperty("--tour-chrome-h", h + "px");
+}
+
+function applyDim(dim) {
+  if (!root) return;
+  root.classList.remove("dim-soft", "dim-none", "bright");
+  const d = dim || "soft";
+  root.classList.add(d === "none" ? "dim-none" : "dim-soft");
+  const s = STEPS[idx];
+  if (s && s.bright) root.classList.add("bright");
+}
+
+function setCaptionMode(mode) {
+  if (!root) return;
+  const chrome = root.querySelector(".tour-chrome");
+  if (!chrome) return;
+  chrome.classList.remove("mode-full", "mode-compact", "mode-hidden", "is-collapsed");
+  let m = mode || "compact";
+  if (sheetExpanded && m === "compact") m = "full";
+  chrome.classList.add("mode-" + m);
+  if (m === "hidden") chrome.classList.add("is-collapsed");
+  updateChromeVar();
+}
+
+function resolveCaptionMode(step) {
+  if (sheetExpanded && step.captionMode !== "hidden") return "full";
+  return step.captionMode || "compact";
+}
+
+function applyScrollMargin(el) {
+  if (!el) return;
+  el.style.scrollMarginBottom = "calc(var(--tour-chrome-h, 120px) + 12px)";
+  el.style.scrollMarginTop = "12px";
+}
+
+function scrollEl(el) {
+  if (!el) {
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    return;
+  }
+  applyScrollMargin(el);
+  el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+}
+
+function scrollToTarget(s) {
+  const el = s.target ? s.target() : null;
+  scrollEl(el);
+}
+
+/**
+ * 要素をスポット。ビューポート＋chrome高さを考慮して高さをクランプ。
+ */
+function positionSpotEl(el) {
+  if (!root) return;
+  activeSpotEl = el || null;
+  const spot = root.querySelector(".tour-spot");
+  const block = root.querySelector(".tour-block");
+  const step = STEPS[idx];
+  const dim = step ? step.dim || "soft" : "soft";
+  applyDim(dim);
+
+  if (!el) {
+    spot.style.display = "none";
+    if (dim === "none") {
+      block.classList.remove("full");
+    } else {
+      block.classList.add("full");
+    }
+    return;
+  }
+
+  const r = el.getBoundingClientRect();
+  const pad = isMobile() ? 6 : 10;
+  const chromeH = chromeHeight();
+  const maxBottom = window.innerHeight - Math.max(chromeH, 8) - 8;
+  const minTop = 8;
+
+  let top = Math.max(minTop, r.top - pad);
+  let left = Math.max(8, r.left - pad);
+  let width = Math.min(window.innerWidth - 16, r.width + pad * 2);
+  let height = r.height + pad * 2;
+
+  // 下端が chrome に食い込む場合は上へ寄せて高さをクランプ
+  const maxH = isMobile()
+    ? Math.min(window.innerHeight * 0.45, maxBottom - minTop)
+    : maxBottom - minTop;
+  if (height > maxH) height = Math.max(40, maxH);
+  if (top + height > maxBottom) {
+    top = Math.max(minTop, maxBottom - height);
+  }
+  if (top + height > maxBottom) {
+    top = minTop;
+    height = Math.max(40, maxBottom - top);
+  }
+
+  spot.style.display = "block";
+  spot.style.top = top + "px";
+  spot.style.left = left + "px";
+  spot.style.width = width + "px";
+  spot.style.height = height + "px";
+  block.classList.remove("full");
+}
+
+function positionSpot(s) {
+  const el = s && s.target ? s.target() : null;
+  positionSpotEl(el);
+}
+
 async function seek(i, forward) {
   if (busy) return;
   if (i < 0 || i >= STEPS.length) return;
   cancelDwell();
   busy = true;
   idx = i;
+  sheetExpanded = false;
   const s = STEPS[i];
 
   setDemoState(s);
   if (s.after) s.after();
   renderCaption();
-  positionSpot(null);
+  setCaptionMode(resolveCaptionMode(s));
+  applyDim(s.dim || "soft");
+  positionSpotEl(null);
 
   await raf();
+  updateChromeVar();
   await delay(reduce ? 0 : 280);
   scrollToTarget(s);
   await delay(reduce ? 0 : 320);
   positionSpot(s);
+  updateChromeVar();
 
   busy = false;
 
@@ -247,7 +474,9 @@ async function seek(i, forward) {
       busy = true;
       await s.animate();
       busy = false;
+      setCaptionMode(resolveCaptionMode(s));
       positionSpot(s);
+      updateChromeVar();
       if (!playing) return;
     }
     startDwell(dwellOf(s));
@@ -273,65 +502,40 @@ async function togglePlay() {
     return;
   }
   const s = STEPS[idx];
-  if (s.animate && !getState(DEMO_KEY).ran) {
+  // 解析ステップ（ran になる animate）が未実行なら再生時に走らせる
+  if (s.animate && s.ran === false && !getState(DEMO_KEY).ran) {
     busy = true;
     await s.animate();
     busy = false;
+    setCaptionMode(resolveCaptionMode(s));
     positionSpot(s);
     if (!playing) return;
     startDwell(dwellOf(s));
     return;
   }
-  // 途中まで読んでいた場合は残り時間から再開、無ければ新規スタート
   if (slideDur && elapsedBeforePause > 0) resumeDwell();
   else startDwell(dwellOf(s));
-}
-
-function scrollToTarget(s) {
-  const el = s.target ? s.target() : null;
-  if (el) {
-    el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
-  } else {
-    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-  }
-}
-
-function positionSpot(s) {
-  if (!root) return;
-  const spot = root.querySelector(".tour-spot");
-  const block = root.querySelector(".tour-block");
-  const el = s && s.target ? s.target() : null;
-  if (!el) {
-    spot.style.display = "none";
-    block.classList.add("full");
-    return;
-  }
-  const r = el.getBoundingClientRect();
-  const pad = 10;
-  spot.style.display = "block";
-  spot.style.top = Math.max(8, r.top - pad) + "px";
-  spot.style.left = Math.max(8, r.left - pad) + "px";
-  spot.style.width = Math.min(window.innerWidth - 16, r.width + pad * 2) + "px";
-  spot.style.height = r.height + pad * 2 + "px";
-  block.classList.remove("full");
 }
 
 function renderCaption() {
   if (!root) return;
   const s = STEPS[idx];
-  const cap = root.querySelector(".tour-caption");
+  const chrome = root.querySelector(".tour-chrome");
   const dots = STEPS.map(
     (_, i) =>
       `<span class="d${i === idx ? " on" : ""}${i < idx ? " done" : ""}"></span>`
   ).join("");
-  cap.innerHTML = `
-    <div class="tc-top">
-      <span class="tc-step">STEP ${idx + 1} / ${STEPS.length}</span>
-      <div class="tc-dots">${dots}</div>
-      <button class="tc-x" type="button" aria-label="ツアーを終了">✕</button>
+
+  chrome.innerHTML = `
+    <div class="tour-sheet" data-act="toggle-sheet" role="button" tabindex="0" aria-label="説明を展開">
+      <div class="tc-top">
+        <span class="tc-step">STEP ${idx + 1} / ${STEPS.length}</span>
+        <div class="tc-dots">${dots}</div>
+        <button class="tc-x" type="button" aria-label="ツアーを終了">✕</button>
+      </div>
+      <h4>${s.t}</h4>
+      <p>${s.b}</p>
     </div>
-    <h4>${s.t}</h4>
-    <p>${s.b}</p>
     <div class="tc-prog" aria-hidden="true"><i></i></div>
     <div class="tc-controls">
       <button class="tc-btn" data-act="prev" type="button" ${idx === 0 ? "disabled" : ""}>◀ 前へ</button>
@@ -341,15 +545,42 @@ function renderCaption() {
 
   setProgress(0);
 
-  cap.querySelector(".tc-x").addEventListener("click", close);
-  cap.querySelector('[data-act="prev"]').addEventListener("click", () => go(-1));
-  cap.querySelector('[data-act="play"]').addEventListener("click", togglePlay);
-  cap.querySelector('[data-act="next"]').addEventListener("click", () => {
+  chrome.querySelector(".tc-x").addEventListener("click", (e) => {
+    e.stopPropagation();
+    close();
+  });
+  chrome.querySelector('[data-act="prev"]').addEventListener("click", (e) => {
+    e.stopPropagation();
+    go(-1);
+  });
+  chrome.querySelector('[data-act="play"]').addEventListener("click", (e) => {
+    e.stopPropagation();
+    togglePlay();
+  });
+  chrome.querySelector('[data-act="next"]').addEventListener("click", (e) => {
+    e.stopPropagation();
     if (idx === STEPS.length - 1) {
       playing = true;
       seek(0, true);
     } else {
       go(1);
+    }
+  });
+
+  const sheet = chrome.querySelector(".tour-sheet");
+  sheet.addEventListener("click", (e) => {
+    if (e.target.closest(".tc-x")) return;
+    // モバイル: compact ↔ full トグル
+    if (STEPS[idx].captionMode === "hidden") return;
+    sheetExpanded = !sheetExpanded;
+    setCaptionMode(sheetExpanded ? "full" : "compact");
+    if (activeSpotEl) positionSpotEl(activeSpotEl);
+    else positionSpot(STEPS[idx]);
+  });
+  sheet.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      sheet.click();
     }
   });
 }
@@ -371,24 +602,32 @@ function onKey(e) {
   }
 }
 
+function handleResize() {
+  updateChromeVar();
+  if (activeSpotEl) positionSpotEl(activeSpotEl);
+  else positionSpot(STEPS[idx]);
+}
+
 export function openTour() {
   if (root) return;
   root = document.createElement("div");
-  root.className = "tour-root";
+  root.className = "tour-root dim-soft";
   root.innerHTML = `
     <div class="tour-block full"></div>
     <div class="tour-spot"></div>
-    <div class="tour-caption"></div>`;
+    <div class="tour-chrome mode-compact"></div>`;
   document.body.appendChild(root);
   document.body.classList.add("tour-active");
 
   root.querySelector(".tour-block").addEventListener("click", () => go(1));
-  onResize = () => positionSpot(STEPS[idx]);
+  onResize = handleResize;
   window.addEventListener("resize", onResize);
+  mqMobile.addEventListener("change", onResize);
   document.addEventListener("keydown", onKey);
 
   idx = 0;
   playing = true;
+  sheetExpanded = false;
   seek(0, true);
 }
 
@@ -397,9 +636,12 @@ export function close() {
   cancelDwell();
   playing = false;
   window.removeEventListener("resize", onResize);
+  mqMobile.removeEventListener("change", onResize);
   document.removeEventListener("keydown", onKey);
+  document.documentElement.style.removeProperty("--tour-chrome-h");
   root.remove();
   root = null;
+  activeSpotEl = null;
   document.body.classList.remove("tour-active");
 }
 

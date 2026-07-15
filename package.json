@@ -1,13 +1,26 @@
 {
-  "name": "off-balance-liability-demo",
+  "name": "dd-demo",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "tsc -p tsconfig.app.json --noEmit && vite build",
+    "preview": "vite preview",
+    "copy-vendor": "node scripts/copy-vendor-phase4.mjs"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "pdfjs-dist": "^6.1.200",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vercel/node": "^5.8.23",
+    "@vitejs/plugin-react": "^4.5.2",
+    "typescript": "~5.8.3",
     "vite": "^6.3.5"
   }
 }

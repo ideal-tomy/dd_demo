@@ -1,6 +1,12 @@
 import raw from "./ma-demo-companies.json";
+import {
+  getQuestionsForCompany,
+  type CompanyQuestions,
+  type JudgmentPhase,
+} from "./ma-demo-questions";
 
 export type StrategyAxis = "system" | "restructure" | "strategy";
+export type { JudgmentPhase, CompanyQuestions };
 
 export type Range = [number, number];
 
@@ -18,6 +24,8 @@ export type ValueupLever = {
   capex?: number;
   onetime_cost?: number;
   onetime_gain?: Range;
+  /** 実働デモがある場合のみ。例: product_flow_minato */
+  demo_id?: string;
 };
 
 export type MaCompany = {
@@ -49,6 +57,8 @@ export type MaCompany = {
   };
   valueup_levers: Record<StrategyAxis, ValueupLever[]>;
   offbalance_treatment: Record<StrategyAxis, string>;
+  /** フェーズ×主軸の問い在庫（レバーと同じ思想） */
+  questions: CompanyQuestions;
   exit: {
     ebitda_multiple: Range;
     buyer_types: string[];
@@ -60,13 +70,23 @@ type MaCompaniesFile = {
   schema_version: string;
   unit: string;
   note: string;
-  companies: MaCompany[];
+  companies: Omit<MaCompany, "questions">[];
 };
 
 const data = raw as unknown as MaCompaniesFile;
 
+function attachQuestions(
+  company: Omit<MaCompany, "questions">,
+): MaCompany {
+  const questions = getQuestionsForCompany(company.id);
+  if (!questions) {
+    throw new Error(`questions missing for company: ${company.id}`);
+  }
+  return { ...company, questions };
+}
+
 export const MA_UNIT = data.unit;
-export const MA_COMPANIES: MaCompany[] = data.companies;
+export const MA_COMPANIES: MaCompany[] = data.companies.map(attachQuestions);
 
 export const STRATEGY_AXIS_LABELS: Record<StrategyAxis, string> = {
   system: "システム導入による効率化",

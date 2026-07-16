@@ -3,6 +3,9 @@ import type {
   DdFlagJudgment,
   DdFlagReportSummary,
 } from "../../ai/scenario/build-dd-flags";
+import type { StrategyAxis } from "../../data/ma-companies";
+import { ExitPreviewTag } from "../experience/ExitPreviewTag";
+import { JudgmentQuestionsCard } from "../experience/JudgmentQuestionsCard";
 
 type Props = {
   companyName: string;
@@ -11,6 +14,8 @@ type Props = {
   summary: DdFlagReportSummary;
   judgments: Record<string, DdFlagJudgment>;
   onJudgment: (id: string, value: DdFlagJudgment) => void;
+  strategyAxis: StrategyAxis;
+  questions: string[];
 };
 
 function yenRange(lo: number, hi: number): string {
@@ -24,6 +29,8 @@ export function DdFlagReport({
   summary,
   judgments,
   onJudgment,
+  strategyAxis,
+  questions,
 }: Props) {
   const quant = flags.filter((f) => f.category === "定量");
   const disc = flags.filter((f) => f.category === "発見");
@@ -80,6 +87,12 @@ export function DdFlagReport({
         </div>
       ) : null}
 
+      <JudgmentQuestionsCard
+        phase="phase1"
+        strategyAxis={strategyAxis}
+        questions={questions}
+      />
+
       <p className="dd-muted dd-form-hint">
         本結果は業種テンプレ＋スケールに基づくデモ査定です。実案件では追加調査が必要です。
       </p>
@@ -114,6 +127,7 @@ function FlagCard({
       <h4>{flag.title}</h4>
       <p className="dd-flag-glance">{flag.glance}</p>
       <p className="dd-muted">prior: {flag.prior}</p>
+      <ExitPreviewTag />
 
       <div className="dd-flag-nodes">
         {flag.sources.map((s) => (

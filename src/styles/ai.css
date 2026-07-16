@@ -16,6 +16,7 @@
   --purple: #3c3489;
   --white: #fff;
   --flash: #fff4df;
+  --brass: #b8975a;
   font-family: "Noto Sans JP", system-ui, sans-serif;
   color: var(--ink);
   background: linear-gradient(160deg, #eef3f7 0%, #f8fafb 45%, #e8eef4 100%);
@@ -62,8 +63,10 @@ body {
 
 .dd-ai-top__links {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .dd-eyebrow {
@@ -988,6 +991,306 @@ body {
   margin: 0;
   font-size: 0.68rem;
   color: var(--muted);
+}
+
+.dd-scenario-note {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* —— Returned time counter —— */
+.dd-time-counter {
+  position: relative;
+  z-index: 40;
+}
+
+.dd-time-counter__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.dd-time-counter__btn--lit {
+  border-color: color-mix(in srgb, var(--brass) 55%, var(--line));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brass) 25%, transparent);
+}
+
+.dd-time-counter__icon {
+  font-size: 0.85rem;
+}
+
+.dd-time-counter__label {
+  color: var(--muted);
+}
+
+.dd-time-counter__value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--brass);
+}
+
+.dd-time-counter__scrim {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  z-index: 41;
+}
+
+.dd-time-counter__pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: min(300px, 82vw);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  box-shadow: 0 8px 24px rgba(16, 24, 38, 0.12);
+  z-index: 42;
+}
+
+.dd-time-counter__pop-title {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.dd-time-counter__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.dd-time-counter__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.72rem;
+}
+
+.dd-time-counter__list strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.dd-time-counter__basis {
+  margin: 10px 0 4px;
+  font-size: 0.65rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.dd-time-counter__trial {
+  margin: 0;
+  font-size: 0.65rem;
+  color: var(--brass);
+}
+
+/* —— Judgment questions —— */
+.dd-judgment-card {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #101826;
+  color: #f7f8fa;
+  border-top: 2px solid var(--brass);
+}
+
+.dd-judgment-card__eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--brass) 80%, white);
+}
+
+.dd-judgment-card__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.dd-judgment-card__list li {
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.dd-exit-tag {
+  display: block;
+  margin: 6px 0 0;
+  padding-left: 8px;
+  border-left: 2px solid #2f6fb2;
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.dd-lever-demo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px 10px;
+  border-top: 0.5px solid var(--line);
+  background: var(--surface);
+}
+
+.dd-lever-demo__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--ok);
+}
+
+.dd-lever-demo__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: #1d8a66;
+}
+
+.dd-expand-row-wrap {
+  border-bottom: 0.5px solid var(--line);
+}
+
+.dd-expand-row-wrap .dd-expand-row {
+  border-bottom: 0;
+}
+
+/* —— Live payroll layer —— */
+.dd-live-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #e8f1fb;
+  color: #2f6fb2;
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.dd-live-drop {
+  display: grid;
+  gap: 10px;
+  padding: 18px 14px;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.dd-live-console {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #101826;
+  color: #d7dde6;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dd-live-console--done {
+  margin-top: 8px;
+}
+
+.dd-live-console__line {
+  margin: 0;
+}
+
+.dd-live-gaps {
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.dd-live-gaps li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-top: 0.5px solid var(--line);
+  font-size: 0.8rem;
+}
+
+.dd-evidence-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: end center;
+}
+
+@media (min-width: 720px) {
+  .dd-evidence-modal {
+    place-items: center;
+  }
+}
+
+.dd-evidence-modal__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(16, 24, 38, 0.45);
+}
+
+.dd-evidence-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 100%);
+  max-height: 85vh;
+  overflow: auto;
+  padding: 16px 16px 24px;
+  border-radius: 16px 16px 0 0;
+  background: var(--white);
+}
+
+@media (min-width: 720px) {
+  .dd-evidence-modal__panel {
+    border-radius: 12px;
+  }
+}
+
+.dd-evidence-modal__panel h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.dd-evidence-table {
+  width: 100%;
+  margin: 12px 0 16px;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.dd-evidence-table th,
+.dd-evidence-table td {
+  padding: 8px 6px;
+  border-top: 0.5px solid var(--line);
+  text-align: left;
+}
+
+.dd-evidence-table__hit {
+  background: #fbf3e2;
+  font-weight: 500;
 }
 
 /* —— Bottom sheet —— */

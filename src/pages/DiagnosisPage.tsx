@@ -13,6 +13,7 @@ import {
 } from "../access/dd-settings";
 import { ExperienceModeBar } from "../components/access/ExperienceModeBar";
 import { AccessModePanel } from "../components/access/AccessModePanel";
+import { ReturnedTimeCounter } from "../components/experience/ReturnedTimeCounter";
 import { CompanyPicker } from "../components/scenario/CompanyPicker";
 import { ClientCompanyForm } from "../components/scenario/ClientCompanyForm";
 import { ClientDdSetupPanel } from "../components/scenario/ClientDdSetupPanel";
@@ -21,12 +22,17 @@ import { DdFollowupAsk } from "../components/scenario/DdFollowupAsk";
 import { ParamsBottomSheet } from "../components/scenario/ParamsBottomSheet";
 import { ResultDashboard } from "../components/scenario/ResultDashboard";
 import { StorySections } from "../components/scenario/StorySections";
+import { LivePayrollPanel } from "../components/live/LivePayrollPanel";
 import type { DdAccessMode } from "../access/access-mode";
 import {
   buildTrialPortalUrl,
   DD_DEMO_CATALOG_ID,
   DEFAULT_TRIAL_PORTAL_BASE,
 } from "../access/trial-portal";
+import {
+  clearLeverReturnState,
+  loadLeverReturnState,
+} from "../config/lever-demos";
 import { askDdFollowup } from "../ai/askDdFollowup";
 import { runDiagnosis } from "../ai/runDiagnosis";
 import { enrichDdReport } from "../ai/runDdReport";
@@ -48,12 +54,14 @@ import {
 } from "../ai/scenario/exit-model";
 import { buildSampleNarrative } from "../ai/scenario/sample-narrative";
 import {
+  getCompanyById,
   MA_COMPANIES,
   type MaCompany,
   type StrategyAxis,
 } from "../data/ma-companies";
 import type { DdDiagnosisResult } from "../ai/types";
 import { ensureAiDemoCoreConfigured } from "../lib/ai-demo-core-setup";
+import { useReturnedTime } from "../state/ReturnedTimeContext";
 import "../styles/ai.css";
 
 ensureAiDemoCoreConfigured();
@@ -61,6 +69,7 @@ ensureAiDemoCoreConfigured();
 type DataSource = "sample" | "client";
 
 export function DiagnosisPage() {
+  const { addOnComplete } = useReturnedTime();
   const [mode, setMode] = useState<DdAccessMode>(() => getDdAccessMode());
   const [accessOpen, setAccessOpen] = useState(false);
   const [paramsOpen, setParamsOpen] = useState(false);
@@ -99,12 +108,14 @@ export function DiagnosisPage() {
   const [usedActionIds, setUsedActionIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [restoreLeverKey, setRestoreLeverKey] = useState<string | null>(null);
 
   const prevAxis = useRef(params.strategyAxis);
   const prevEquity = useRef<number | null>(null);
   const prevCompanyId = useRef(company.id);
   const flashTimer = useRef<number | null>(null);
   const scanTimer = useRef<number | null>(null);
+  const restoredRef = useRef(false);
 
   const computed = useMemo(
     () => computeExit(company, params),
@@ -122,6 +133,59 @@ export function DiagnosisPage() {
   const exitBlocked =
     dataSource === "client" && (!clientApplied || !clientAnalyzed);
   const showExit = dataSource === "sample" || clientAnalyzed;
+
+  // レバーデモからの戻り: 展開・スクロール・企業/主軸を復元
+  useEffect(() => {
+    if (restoredRef.current) return;
+    const paramsQs = new URLSearchParams(window.location.search);
+    const fromQuery = paramsQs.get("restore") === "1";
+    const stored = loadLeverReturnState();
+    if (!fromQuery && !stored) return;
+    restoredRef.current = true;
+
+    const companyId = paramsQs.get("companyId") ?? stored?.companyId;
+    const axis = (paramsQs.get("axis") ?? stored?.strategyAxis) as
+      | StrategyAxis
+      | undefined;
+    const lever = paramsQs.get("lever") ?? stored?.leverKey ?? null;
+    const src = (paramsQs.get("src") ?? stored?.dataSource) as
+      | DataSource
+      | undefined;
+    const scrollY = stored?.scrollY ?? 0;
+
+    if (companyId) {
+      const found = getCompanyById(companyId);
+      if (found) {
+        setCompany(found);
+        setDataSource(src === "client" ? "client" : "sample");
+        if (src === "client") {
+          setClientApplied(true);
+          setClientAnalyzed(true);
+        }
+      }
+    }
+    if (axis === "system" || axis === "restructure" || axis === "strategy") {
+      setParams((p) => ({ ...p, strategyAxis: axis }));
+    }
+    if (lever) setRestoreLeverKey(lever);
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: scrollY, behavior: "instant" as ScrollBehavior });
+    });
+    clearLeverReturnState();
+    if (fromQuery) {
+      const url = new URL(window.location.href);
+      url.search = "";
+      window.history.replaceState({}, "", url.pathname);
+    }
+  }, []);
+
+  // サンプルEXIT表示完了時にカウンター加算（1回）
+  useEffect(() => {
+    if (dataSource === "sample" && showExit) {
+      addOnComplete("sample_exit_view");
+    }
+  }, [dataSource, showExit, addOnComplete]);
 
   const trialPortalHref = useMemo(() => {
     const returnUrl =
@@ -274,6 +338,7 @@ export function DiagnosisPage() {
     setResult(buildSampleNarrative(company, params, computed));
     pulse([setFlashKpi, setFlashBridge, setFlashOffbalance]);
     setAnalyzing(false);
+    addOnComplete("client_dd_analyze");
   }
 
   async function onAsk(question: string) {
@@ -334,6 +399,7 @@ export function DiagnosisPage() {
           ? outcome.remainingRequests
           : null,
       );
+      addOnComplete("proposal_update");
     } catch (err) {
       if (err instanceof AiTransportError) {
         setError(err.normalized.userMessage);
@@ -360,6 +426,7 @@ export function DiagnosisPage() {
           </p>
         </div>
         <div className="dd-ai-top__links">
+          <ReturnedTimeCounter />
           <a className="dd-link" href="/">
             ← ストーリーデモへ
           </a>
@@ -436,20 +503,25 @@ export function DiagnosisPage() {
       )}
 
       {dataSource === "client" && clientApplied ? (
-        <ClientDdSetupPanel
-          company={company}
-          extraPriors={extraPriors}
-          materials={materials}
-          analyzing={analyzing}
-          scanStep={scanStep}
-          onAddPrior={(text) =>
-            setExtraPriors((prev) =>
-              prev.includes(text) ? prev : [...prev, text],
-            )
-          }
-          onMaterialsChange={onMaterialsChange}
-          onAnalyze={() => void runClientAnalysis()}
-        />
+        <>
+          <ClientDdSetupPanel
+            company={company}
+            extraPriors={extraPriors}
+            materials={materials}
+            analyzing={analyzing}
+            scanStep={scanStep}
+            onAddPrior={(text) =>
+              setExtraPriors((prev) =>
+                prev.includes(text) ? prev : [...prev, text],
+              )
+            }
+            onMaterialsChange={onMaterialsChange}
+            onAnalyze={() => void runClientAnalysis()}
+          />
+          <LivePayrollPanel
+            onComplete={() => addOnComplete("live_payroll_attendance")}
+          />
+        </>
       ) : null}
 
       {formBlocked ? (
@@ -469,6 +541,8 @@ export function DiagnosisPage() {
             onJudgment={(id, value) =>
               setJudgments((prev) => ({ ...prev, [id]: value }))
             }
+            strategyAxis={params.strategyAxis}
+            questions={company.questions.phase1[params.strategyAxis]}
           />
           <DdFollowupAsk
             disabled={askNeedsSetup}
@@ -484,11 +558,15 @@ export function DiagnosisPage() {
 
       {showExit ? (
         <div className="dd-results-stack">
-          {dataSource === "client" ? (
+          {dataSource === "sample" ? (
+            <p className="dd-scenario-note">
+              サンプル企業は事前診断済みのシナリオです
+            </p>
+          ) : (
             <p className="dd-muted dd-form-hint">
               ② バリューアップ → EXIT — 解析結果を踏まえた試算
             </p>
-          ) : null}
+          )}
           <ResultDashboard
             company={company}
             params={params}
@@ -498,6 +576,8 @@ export function DiagnosisPage() {
             flashKpi={flashKpi}
             flashBridge={flashBridge}
             flashOffbalance={flashOffbalance}
+            dataSource={dataSource}
+            restoreLeverKey={restoreLeverKey}
             onAxisChange={onAxisChange}
             onOpenParams={() => setParamsOpen(true)}
           />

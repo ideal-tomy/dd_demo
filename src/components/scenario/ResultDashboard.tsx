@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   STRATEGY_AXIS_LABELS,
   type MaCompany,
@@ -13,6 +13,14 @@ import {
   horizonLabel,
   toOku,
 } from "../../lib/format-money";
+import { ExitPreviewTag } from "../experience/ExitPreviewTag";
+import { JudgmentQuestionsCard } from "../experience/JudgmentQuestionsCard";
+import {
+  buildLeverDemoUrl,
+  isLeverDemoId,
+  saveLeverReturnState,
+  type LeverReturnState,
+} from "../../config/lever-demos";
 
 export const AXIS_SHORT: Record<StrategyAxis, string> = {
   system: "システム効率化",
@@ -39,6 +47,8 @@ type Props = {
   flashKpi: boolean;
   flashBridge: boolean;
   flashOffbalance: boolean;
+  dataSource: "sample" | "client";
+  restoreLeverKey?: string | null;
   onAxisChange: (axis: StrategyAxis) => void;
   onOpenParams: () => void;
 };
@@ -58,11 +68,21 @@ export function ResultDashboard({
   flashKpi,
   flashBridge,
   flashOffbalance,
+  dataSource,
+  restoreLeverKey = null,
   onAxisChange,
   onOpenParams,
 }: Props) {
   const [openLever, setOpenLever] = useState<number | null>(null);
   const [openOb, setOpenOb] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!restoreLeverKey) return;
+    const idx = computed.selectedLevers.findIndex(
+      (l) => l.lever === restoreLeverKey,
+    );
+    if (idx >= 0) setOpenLever(idx);
+  }, [restoreLeverKey, computed.selectedLevers]);
 
   const ok = computed.gapToTarget >= 0;
   const leverImpact = computed.ebitdaPlan - computed.adjustedEbitdaCurrent;
@@ -80,7 +100,6 @@ export function ResultDashboard({
     { l: "負債・簿外", v: Math.max(debtTotal, 0) / 100, c: BAR_COLORS.debt },
     { l: "株式価値", v: Math.max(toOku(computed.equityValue), 0.1), c: BAR_COLORS.equity },
   ];
-  // Normalize bar heights for visual comparison (mix of scales) — use relative within type
   const heights = [
     computed.adjustedEbitdaCurrent,
     Math.max(leverImpact, 1),
@@ -100,6 +119,23 @@ export function ResultDashboard({
   );
 
   const obPlan = result?.offbalancePlan ?? [];
+  const phase3Qs = company.questions.phase3[params.strategyAxis];
+  const phase4Qs = company.questions.phase4[params.strategyAxis];
+
+  function openDemo(leverName: string, demoId: string) {
+    if (!isLeverDemoId(demoId)) return;
+    const state: LeverReturnState = {
+      companyId: company.id,
+      strategyAxis: params.strategyAxis,
+      leverKey: leverName,
+      scrollY: window.scrollY,
+      expandedLever: leverName,
+      dataSource,
+    };
+    saveLeverReturnState(state);
+    const url = buildLeverDemoUrl(demoId, state);
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
   return (
     <section className="dd-dash">
@@ -206,45 +242,68 @@ export function ResultDashboard({
           computed.selectedLevers.map((l, i) => {
             const detail = result?.leverDetails.find((d) => d.lever === l.lever);
             const open = openLever === i;
+            const demoId = l.demo_id;
             return (
-              <button
-                key={l.lever}
-                type="button"
-                className="dd-expand-row"
-                onClick={() => setOpenLever(open ? null : i)}
-              >
-                <div className="dd-expand-row__main">
-                  <span>{l.lever}</span>
-                  <strong>
-                    +{formatMillion(l.impactApplied)}
-                    <em>百万</em>
-                  </strong>
-                </div>
-                <div className="dd-bar-track">
-                  <i
-                    style={{
-                      width: `${Math.round((l.impactApplied / maxLever) * 100)}%`,
-                      background: BAR_COLORS.lever,
-                    }}
-                  />
-                </div>
-                {open ? (
-                  <p className="dd-expand-row__detail">
-                    {detail?.rationale ??
-                      `${STRATEGY_AXIS_LABELS[params.strategyAxis]}のレバー（達成率${Math.round(l.achievementRate * 100)}%）`}
-                    {detail?.kpi ? (
-                      <>
-                        <br />
-                        KPI: {detail.kpi}
-                      </>
-                    ) : null}
-                  </p>
+              <div key={l.lever} className="dd-expand-row-wrap">
+                <button
+                  type="button"
+                  className="dd-expand-row"
+                  onClick={() => setOpenLever(open ? null : i)}
+                >
+                  <div className="dd-expand-row__main">
+                    <span>{l.lever}</span>
+                    <strong>
+                      +{formatMillion(l.impactApplied)}
+                      <em>百万</em>
+                    </strong>
+                  </div>
+                  <div className="dd-bar-track">
+                    <i
+                      style={{
+                        width: `${Math.round((l.impactApplied / maxLever) * 100)}%`,
+                        background: BAR_COLORS.lever,
+                      }}
+                    />
+                  </div>
+                  {open ? (
+                    <p className="dd-expand-row__detail">
+                      {detail?.rationale ??
+                        `${STRATEGY_AXIS_LABELS[params.strategyAxis]}のレバー（達成率${Math.round(l.achievementRate * 100)}%）`}
+                      {detail?.kpi ? (
+                        <>
+                          <br />
+                          KPI: {detail.kpi}
+                        </>
+                      ) : null}
+                    </p>
+                  ) : null}
+                </button>
+                {open && demoId && isLeverDemoId(demoId) ? (
+                  <div className="dd-lever-demo">
+                    <span className="dd-lever-demo__status">
+                      <i className="dd-lever-demo__dot" />
+                      デモ稼働中
+                    </span>
+                    <button
+                      type="button"
+                      className="dd-btn-ghost dd-btn-sm"
+                      onClick={() => openDemo(l.lever, demoId)}
+                    >
+                      このツールを試す →
+                    </button>
+                  </div>
                 ) : null}
-              </button>
+              </div>
             );
           })
         )}
       </div>
+
+      <JudgmentQuestionsCard
+        phase="phase4"
+        strategyAxis={params.strategyAxis}
+        questions={phase4Qs}
+      />
 
       <p className="dd-sec-label">
         簿外債務と処置{" "}
@@ -287,15 +346,24 @@ export function ResultDashboard({
               </div>
               {open ? (
                 <p className="dd-expand-row__detail dd-expand-row__detail--ob">
-                  処置: {plan?.treatment ?? company.offbalance_treatment[params.strategyAxis]}
+                  処置:{" "}
+                  {plan?.treatment ??
+                    company.offbalance_treatment[params.strategyAxis]}
                   <br />
                   時期: {plan?.timing ?? "—"}
+                  <ExitPreviewTag />
                 </p>
               ) : null}
             </button>
           );
         })}
       </div>
+
+      <JudgmentQuestionsCard
+        phase="phase3"
+        strategyAxis={params.strategyAxis}
+        questions={phase3Qs}
+      />
     </section>
   );
 }

@@ -128,6 +128,7 @@ export function buildClientCompany(input: ClientCompanyInput): MaCompany {
     },
     valueup_levers: scaleLevers(template.valueup_levers, scale),
     offbalance_treatment: { ...template.offbalance_treatment },
+    questions: template.questions,
     exit: {
       ebitda_multiple: [...template.exit.ebitda_multiple] as Range,
       buyer_types: [...template.exit.buyer_types],

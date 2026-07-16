@@ -319,7 +319,7 @@ export function StorySections({
       </ul>
 
       <p className="dd-disclaimer">
-        本試算はサンプル診断です。実案件では追加調査が必要です。
+        サンプル企業は事前診断済みのシナリオです。実案件では追加調査が必要です。
       </p>
     </section>
   );

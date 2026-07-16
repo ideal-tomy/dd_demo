@@ -99,7 +99,7 @@
       },
       "valueup_levers": {
         "system": [
-          { "lever": "生産管理MES+実績自動収集の導入", "ebitda_impact": [20, 35], "months": 15, "capex": 45 },
+          { "lever": "生産管理MES+実績自動収集の導入", "ebitda_impact": [20, 35], "months": 15, "capex": 45, "demo_id": "product_flow_minato" },
           { "lever": "AI見積・原価管理システムで受注採算を可視化", "ebitda_impact": [10, 18], "months": 9, "capex": 12 },
           { "lever": "老朽設備の予知保全でダウンタイム削減", "ebitda_impact": [8, 15], "months": 12, "capex": 20 }
         ],

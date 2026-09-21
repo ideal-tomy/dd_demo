@@ -169,158 +169,166 @@ export function StorySections({
 
   return (
     <section className="dd-story">
-      <p className="dd-sec-label">診断 — この会社の型</p>
-      <div className="dd-tags">
-        {tags.map((t) => (
-          <span
-            key={t.text}
-            className={t.tone === "warn" ? "dd-tag dd-tag--warn" : "dd-tag"}
-          >
-            {t.text}
-          </span>
-        ))}
-      </div>
-      <div className="dd-issue-hero">
-        <p className="dd-kpi__label">主要論点</p>
-        <p className="dd-issue-hero__title">
-          {topFinding?.item ?? "簿外候補"}
-          <span>
-            {topFinding
-              ? `${topFinding.estimate[0]}〜${topFinding.estimate[1]}百万`
-              : ""}
-          </span>
-        </p>
-      </div>
-      <ul className="dd-flag-list">
-        {company.dd_findings.discovered.map((d, i) => (
-          <li key={d}>
-            <i className={i === 0 ? "dd-flag dd-flag--danger" : "dd-flag dd-flag--warn"} />
-            <span>
-              {d}
-              {i === 0 ? (
-                <em> EXIT設計に直結</em>
-              ) : d.includes("転嫁") || d.includes("改善") || d.includes("ロス") ? (
-                <em className="dd-em-ok"> 改善余地</em>
-              ) : null}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <p className="dd-sec-label">EXITストーリー</p>
-      <div className="dd-formula">
-        <div>
-          <strong>
-            {computed.ebitdaPlan}
-            <span>百万</span>
-          </strong>
-          <span>計画EBITDA</span>
-        </div>
-        <i>×</i>
-        <div>
-          <strong>{computed.multiple.toFixed(2)}x</strong>
-          <span>想定倍率</span>
-        </div>
-        <i>−</i>
-        <div>
-          <strong className="dd-num-danger">
-            {formatOku(debtBundle, { unit: false })}
-            <span>億</span>
-          </strong>
-          <span>負債・簿外</span>
-        </div>
-        <i>=</i>
-        <div>
-          <strong className="dd-num-ok">
-            {formatOku(computed.equityValue, { unit: false })}
-            <span>億</span>
-          </strong>
-          <span>株式価値</span>
-        </div>
-      </div>
-      <div className="dd-buyers">
-        {buyerHooks.map((b) => (
-          <div key={b.buyer} className="dd-buyer">
-            <strong>{b.buyer}</strong>
-            <span>刺さる点: {b.hook}</span>
-          </div>
-        ))}
-      </div>
-
-      <p className="dd-sec-label">ロードマップ</p>
-      <ol className="dd-timeline">
-        <li className="dd-timeline__item dd-timeline__item--done">
-          <strong>
-            Phase 1 <em>0〜12ヶ月</em>
-          </strong>
-          <span>{roadmap.phase1}</span>
-        </li>
-        <li className="dd-timeline__item dd-timeline__item--mid">
-          <strong>
-            Phase 2 <em>12〜36ヶ月</em>
-          </strong>
-          <span>{roadmap.phase2}</span>
-        </li>
-        <li className="dd-timeline__item">
-          <strong>
-            Phase 3 <em>36〜60ヶ月</em>
-          </strong>
-          <span>{roadmap.phase3}</span>
-        </li>
-      </ol>
-
-      <p className="dd-sec-label">目標達成メーター</p>
-      <div className="dd-meter">
-        <div className="dd-meter__head">
-          <span>
-            現在 <strong>{formatOku(computed.equityValue)}</strong>
-          </span>
-          <span>
-            目標 <strong>{formatOku(params.exitTarget)}</strong>
-          </span>
-        </div>
-        <div className="dd-meter__track">
-          <i
-            className={`dd-meter__fill dd-meter__fill--${meterTone}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <p className={reached ? "dd-meter__msg dd-meter__msg--ok" : "dd-meter__msg"}>
-          {reached
-            ? "目標達成の試算です"
-            : `あと${formatOkuFull(Math.abs(computed.gapToTarget))}。下の対処をタップすると試算が変わります`}
-        </p>
-        <div className="dd-meter__actions">
-          {actions.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              className="dd-action-btn"
-              disabled={a.disabled}
-              onClick={() => {
-                a.apply();
-                onUseAction(a.id);
-              }}
+      <div className="dd-story__block">
+        <p className="dd-sec-label">診断 — この会社の型</p>
+        <div className="dd-tags">
+          {tags.map((t) => (
+            <span
+              key={t.text}
+              className={t.tone === "warn" ? "dd-tag dd-tag--warn" : "dd-tag"}
             >
-              {a.label}
-            </button>
+              {t.text}
+            </span>
           ))}
-          {actions.length === 0 ? (
-            <p className="dd-muted">追加の対処候補はありません。条件変更から調整できます。</p>
-          ) : null}
+        </div>
+        <div className="dd-issue-hero">
+          <p className="dd-kpi__label">主要論点</p>
+          <p className="dd-issue-hero__title">
+            {topFinding?.item ?? "簿外候補"}
+            <span>
+              {topFinding
+                ? `${topFinding.estimate[0]}〜${topFinding.estimate[1]}百万`
+                : ""}
+            </span>
+          </p>
+        </div>
+        <ul className="dd-flag-list">
+          {company.dd_findings.discovered.map((d, i) => (
+            <li key={d}>
+              <i className={i === 0 ? "dd-flag dd-flag--danger" : "dd-flag dd-flag--warn"} />
+              <span>
+                {d}
+                {i === 0 ? (
+                  <em> EXIT設計に直結</em>
+                ) : d.includes("転嫁") || d.includes("改善") || d.includes("ロス") ? (
+                  <em className="dd-em-ok"> 改善余地</em>
+                ) : null}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="dd-story__block">
+        <p className="dd-sec-label">EXITストーリー</p>
+        <div className="dd-formula">
+          <div>
+            <strong>
+              {computed.ebitdaPlan}
+              <span>百万</span>
+            </strong>
+            <span>計画EBITDA</span>
+          </div>
+          <i>×</i>
+          <div>
+            <strong>{computed.multiple.toFixed(2)}x</strong>
+            <span>想定倍率</span>
+          </div>
+          <i>−</i>
+          <div>
+            <strong className="dd-num-danger">
+              {formatOku(debtBundle, { unit: false })}
+              <span>億</span>
+            </strong>
+            <span>負債・簿外</span>
+          </div>
+          <i>=</i>
+          <div>
+            <strong className="dd-num-ok">
+              {formatOku(computed.equityValue, { unit: false })}
+              <span>億</span>
+            </strong>
+            <span>株式価値</span>
+          </div>
+        </div>
+        <div className="dd-buyers">
+          {buyerHooks.map((b) => (
+            <div key={b.buyer} className="dd-buyer">
+              <strong>{b.buyer}</strong>
+              <span>刺さる点: {b.hook}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <p className="dd-sec-label">リスク</p>
-      <ul className="dd-risk-list">
-        {risks.map((r) => (
-          <li key={r}>{r}</li>
-        ))}
-      </ul>
+      <div className="dd-story__block">
+        <p className="dd-sec-label">ロードマップ</p>
+        <ol className="dd-timeline">
+          <li className="dd-timeline__item dd-timeline__item--done">
+            <strong>
+              Phase 1 <em>0〜12ヶ月</em>
+            </strong>
+            <span>{roadmap.phase1}</span>
+          </li>
+          <li className="dd-timeline__item dd-timeline__item--mid">
+            <strong>
+              Phase 2 <em>12〜36ヶ月</em>
+            </strong>
+            <span>{roadmap.phase2}</span>
+          </li>
+          <li className="dd-timeline__item">
+            <strong>
+              Phase 3 <em>36〜60ヶ月</em>
+            </strong>
+            <span>{roadmap.phase3}</span>
+          </li>
+        </ol>
+      </div>
 
-      <p className="dd-disclaimer">
-        サンプル企業は事前診断済みのシナリオです。実案件では追加調査が必要です。
-      </p>
+      <div className="dd-story__block">
+        <p className="dd-sec-label">目標達成メーター</p>
+        <div className="dd-meter">
+          <div className="dd-meter__head">
+            <span>
+              現在 <strong>{formatOku(computed.equityValue)}</strong>
+            </span>
+            <span>
+              目標 <strong>{formatOku(params.exitTarget)}</strong>
+            </span>
+          </div>
+          <div className="dd-meter__track">
+            <i
+              className={`dd-meter__fill dd-meter__fill--${meterTone}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className={reached ? "dd-meter__msg dd-meter__msg--ok" : "dd-meter__msg"}>
+            {reached
+              ? "目標達成の試算です"
+              : `あと${formatOkuFull(Math.abs(computed.gapToTarget))}。下の対処をタップすると試算が変わります`}
+          </p>
+          <div className="dd-meter__actions">
+            {actions.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className="dd-action-btn"
+                disabled={a.disabled}
+                onClick={() => {
+                  a.apply();
+                  onUseAction(a.id);
+                }}
+              >
+                {a.label}
+              </button>
+            ))}
+            {actions.length === 0 ? (
+              <p className="dd-muted">追加の対処候補はありません。条件変更から調整できます。</p>
+            ) : null}
+          </div>
+        </div>
+
+        <p className="dd-sec-label">リスク</p>
+        <ul className="dd-risk-list">
+          {risks.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+
+        <p className="dd-disclaimer">
+          サンプル企業は事前診断済みのシナリオです。実案件では追加調査が必要です。
+        </p>
+      </div>
     </section>
   );
 }

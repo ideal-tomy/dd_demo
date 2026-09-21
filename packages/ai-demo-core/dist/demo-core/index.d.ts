@@ -53,6 +53,7 @@ type ManagedTrialRequest = {
         type: "json_object";
     };
     temperature?: number;
+    reasoningEffort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh";
 };
 declare function fetchTrialStatus(trialCode: string): Promise<TrialPublicStatus>;
 declare function managedTrialTransport(request: ManagedTrialRequest): Promise<AiResult & {

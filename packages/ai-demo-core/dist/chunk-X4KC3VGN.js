@@ -9,7 +9,7 @@ import {
 } from "./chunk-BRJXLYY7.js";
 import {
   openaiAdapter
-} from "./chunk-D5NX4H3Q.js";
+} from "./chunk-NCMH5WC2.js";
 import {
   getProviderConfig
 } from "./chunk-3VEQGIIN.js";
@@ -68,7 +68,8 @@ async function managedTrialTransport(request) {
       knowledgeCharCount: request.knowledgeCharCount,
       estimatedInputTokens: request.estimatedInputTokens,
       responseFormat: request.responseFormat,
-      temperature: request.temperature
+      temperature: request.temperature,
+      reasoningEffort: request.reasoningEffort
     })
   });
   const data = await res.json();
@@ -125,7 +126,8 @@ async function sendAiRequest(request, extra) {
         knowledgeCharCount: extra.knowledgeCharCount ?? 0,
         estimatedInputTokens: extra.estimatedInputTokens ?? 0,
         responseFormat: request.responseFormat,
-        temperature: request.temperature
+        temperature: request.temperature,
+        reasoningEffort: request.reasoningEffort
       });
       return {
         text: result.text,
@@ -377,4 +379,4 @@ export {
   formatHelpLabel,
   extractDocumentText
 };
-//# sourceMappingURL=chunk-BLGC3MES.js.map
+//# sourceMappingURL=chunk-X4KC3VGN.js.map

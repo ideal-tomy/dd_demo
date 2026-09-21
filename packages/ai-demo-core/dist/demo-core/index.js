@@ -14,7 +14,7 @@ import {
   sendAiRequest,
   testConnection,
   testTrialConnection
-} from "../chunk-BLGC3MES.js";
+} from "../chunk-X4KC3VGN.js";
 import {
   calculateCost,
   connectionStatusFromError,
@@ -23,7 +23,7 @@ import {
 } from "../chunk-NC6D7SM7.js";
 import "../chunk-DL3EF5LI.js";
 import "../chunk-BRJXLYY7.js";
-import "../chunk-D5NX4H3Q.js";
+import "../chunk-NCMH5WC2.js";
 import {
   normalizeUsage
 } from "../chunk-XOUQUE6R.js";

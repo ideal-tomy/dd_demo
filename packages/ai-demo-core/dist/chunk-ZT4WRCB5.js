@@ -3,7 +3,7 @@ import {
 } from "./chunk-YXYG6IKU.js";
 import {
   runServerProviderRequest
-} from "./chunk-PHQIV4PL.js";
+} from "./chunk-DHCGXNOK.js";
 import {
   estimateMaxCostJpy,
   releaseReservation,
@@ -170,7 +170,8 @@ async function executeTrialAsk(codeHash, body) {
         messages: body.messages,
         maxOutputTokens: maxOut,
         responseFormat: body.responseFormat,
-        temperature: body.temperature
+        temperature: body.temperature,
+        reasoningEffort: body.reasoningEffort
       });
     } catch (providerError) {
       const norm = normalizeError(provider, providerError);
@@ -245,4 +246,4 @@ export {
   getTrialStatusForCode,
   executeTrialAsk
 };
-//# sourceMappingURL=chunk-JKVGF7QA.js.map
+//# sourceMappingURL=chunk-ZT4WRCB5.js.map

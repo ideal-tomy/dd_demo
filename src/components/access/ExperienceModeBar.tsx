@@ -20,6 +20,8 @@ type Props = {
   onModeChange: (mode: DdAccessMode) => void;
   onNeedSetup: (mode: DdAccessMode) => void;
   trialPortalUrl?: string;
+  /** 厳選版からの入口時はリード文を短くする */
+  fromSelection?: boolean;
 };
 
 function needsSetup(mode: DdAccessMode): boolean {
@@ -33,13 +35,18 @@ export function ExperienceModeBar({
   onModeChange,
   onNeedSetup,
   trialPortalUrl,
+  fromSelection = false,
 }: Props) {
   return (
     <div className="dd-mode-bar">
       <div className="dd-mode-bar__head">
         <div>
           <p className="dd-eyebrow">体験の始め方</p>
-          <p className="dd-muted">モードを選んでから診断を実行してください</p>
+          <p className="dd-muted">
+            {fromSelection
+              ? "サンプルでそのまま試せます（APIキー不要）"
+              : "モードを選んでから診断を実行してください"}
+          </p>
         </div>
         {trialPortalUrl ? (
           <a

@@ -78,6 +78,7 @@ type TrialAskRequestBody = {
         type: "json_object";
     };
     temperature?: number;
+    reasoningEffort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh";
 };
 type TrialAskResponse = {
     text: string;

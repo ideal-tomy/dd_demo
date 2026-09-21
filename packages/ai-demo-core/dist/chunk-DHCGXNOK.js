@@ -6,7 +6,7 @@ import {
 } from "./chunk-BRJXLYY7.js";
 import {
   openaiAdapter
-} from "./chunk-D5NX4H3Q.js";
+} from "./chunk-NCMH5WC2.js";
 
 // trial/server-adapters.ts
 function getServerApiKey(provider) {
@@ -30,7 +30,8 @@ async function runServerProviderRequest(input) {
     messages: input.messages,
     maxOutputTokens: input.maxOutputTokens,
     responseFormat: input.responseFormat,
-    temperature: input.temperature
+    temperature: input.temperature,
+    reasoningEffort: input.reasoningEffort
   };
   switch (input.provider) {
     case "openai":
@@ -50,4 +51,4 @@ export {
   getServerApiKey,
   runServerProviderRequest
 };
-//# sourceMappingURL=chunk-PHQIV4PL.js.map
+//# sourceMappingURL=chunk-DHCGXNOK.js.map

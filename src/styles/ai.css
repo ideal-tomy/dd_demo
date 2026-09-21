@@ -39,6 +39,22 @@ body {
   gap: 14px;
 }
 
+.dd-workbench,
+.dd-workbench__rail,
+.dd-workbench__stage {
+  display: grid;
+  gap: 14px;
+}
+
+.dd-kpi--wide-only {
+  display: none;
+}
+
+.dd-dash__judgments {
+  display: grid;
+  gap: 12px;
+}
+
 @media (min-width: 720px) {
   .dd-ai {
     max-width: 520px;
@@ -490,7 +506,7 @@ body {
 
 .dd-vbars__chart {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 6px;
   height: 96px;
   margin-bottom: 4px;
@@ -1913,4 +1929,139 @@ body {
 
 .dd-findings-list__title {
   font-weight: 700;
+}
+
+@media (min-width: 1080px) {
+  .dd-ai {
+    max-width: 1440px;
+    padding: 24px 28px 72px;
+    gap: 20px;
+  }
+
+  .dd-ai-top {
+    align-items: flex-end;
+  }
+
+  .dd-ai-top h1 {
+    font-size: 2rem;
+  }
+
+  .dd-workbench {
+    grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dd-workbench__rail {
+    position: sticky;
+    top: 16px;
+    gap: 12px;
+  }
+
+  .dd-workbench__stage {
+    min-width: 0;
+    gap: 16px;
+  }
+
+  .dd-workbench__rail .dd-mode-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .dd-workbench__rail .dd-tab {
+    white-space: nowrap;
+  }
+
+  .dd-workbench__rail .dd-company-tabs {
+    flex-direction: column;
+  }
+
+  .dd-workbench__rail .dd-chip {
+    flex: none;
+    width: 100%;
+  }
+
+  .dd-workbench__rail .dd-profile__stats--compact {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dd-dash {
+    padding: 22px 24px;
+  }
+
+  .dd-dash__analysis {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dd-kpi-row {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .dd-kpi--wide-only {
+    display: block;
+  }
+
+  .dd-kpi__num {
+    font-size: 2.15rem;
+  }
+
+  .dd-workbench__rail .dd-mode-bar__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dd-axis-pills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dd-pill {
+    white-space: nowrap;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  .dd-vbars__chart {
+    height: 168px;
+  }
+
+  .dd-dash__judgments {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .dd-judgment-card {
+    margin: 0;
+    height: 100%;
+  }
+
+  .dd-story {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 28px;
+    padding: 22px 24px;
+  }
+
+  .dd-story__block .dd-flag-list,
+  .dd-story__block .dd-buyers,
+  .dd-story__block .dd-timeline,
+  .dd-story__block .dd-meter,
+  .dd-story__block .dd-risk-list {
+    margin-bottom: 0;
+  }
+
+  .dd-formula {
+    padding: 16px 12px;
+  }
+
+  .dd-formula strong {
+    font-size: 1.15rem;
+  }
+
+  .dd-sheet {
+    width: min(640px, 100%);
+  }
 }

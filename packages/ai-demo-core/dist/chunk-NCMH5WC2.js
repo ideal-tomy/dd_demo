@@ -25,6 +25,9 @@ async function openaiAdapter(request) {
   if (request.temperature !== void 0) {
     body.temperature = request.temperature;
   }
+  if (request.reasoningEffort !== void 0) {
+    body.reasoning_effort = request.reasoningEffort;
+  }
   const res = await fetch(OPENAI_URL, {
     method: "POST",
     headers: {
@@ -72,4 +75,4 @@ export {
   openaiAdapter,
   openaiConnectionTest
 };
-//# sourceMappingURL=chunk-D5NX4H3Q.js.map
+//# sourceMappingURL=chunk-NCMH5WC2.js.map

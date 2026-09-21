@@ -43,6 +43,12 @@ type AiRequest = {
     };
     /** Sampling temperature. */
     temperature?: number;
+    /**
+     * OpenAI reasoning models (gpt-5-nano 等).
+     * Without this, reasoning can consume the entire max_completion_tokens budget
+     * and leave message.content empty.
+     */
+    reasoningEffort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh";
 };
 type AiResult = {
     text: string;

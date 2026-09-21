@@ -62,6 +62,7 @@ import {
 import type { DdDiagnosisResult } from "../ai/types";
 import { ensureAiDemoCoreConfigured } from "../lib/ai-demo-core-setup";
 import { useReturnedTime } from "../state/ReturnedTimeContext";
+import { useSelectionReturn } from "../hooks/useSelectionReturn";
 import "../styles/ai.css";
 
 ensureAiDemoCoreConfigured();
@@ -70,6 +71,7 @@ type DataSource = "sample" | "client";
 
 export function DiagnosisPage() {
   const { addOnComplete } = useReturnedTime();
+  const { returnUrl } = useSelectionReturn();
   const [mode, setMode] = useState<DdAccessMode>(() => getDdAccessMode());
   const [accessOpen, setAccessOpen] = useState(false);
   const [paramsOpen, setParamsOpen] = useState(false);
@@ -427,9 +429,15 @@ export function DiagnosisPage() {
         </div>
         <div className="dd-ai-top__links">
           <ReturnedTimeCounter />
-          <a className="dd-link" href="/">
-            ← ストーリーデモへ
-          </a>
+          {returnUrl ? (
+            <a className="dd-link" href={returnUrl}>
+              ← 紹介へ
+            </a>
+          ) : (
+            <a className="dd-link" href="/">
+              ← ストーリーデモへ
+            </a>
+          )}
           <button
             type="button"
             className="dd-btn-ghost dd-btn-sm"
@@ -440,188 +448,195 @@ export function DiagnosisPage() {
         </div>
       </header>
 
-      <ExperienceModeBar
-        mode={mode}
-        onModeChange={setMode}
-        onNeedSetup={() => setAccessOpen(true)}
-        trialPortalUrl={trialPortalHref}
-      />
-
-      <section className="dd-card dd-card--compact">
-        <div className="dd-card__head dd-card__head--row">
-          <h2>データの入れ方</h2>
-          <p className="dd-muted">サンプル or 自社</p>
-        </div>
-        <div className="dd-source-tabs" role="tablist" aria-label="データソース">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={dataSource === "sample"}
-            className={
-              dataSource === "sample" ? "dd-tab dd-tab--on" : "dd-tab"
-            }
-            onClick={() => onDataSourceChange("sample")}
-          >
-            サンプル企業
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={dataSource === "client"}
-            className={
-              dataSource === "client" ? "dd-tab dd-tab--on" : "dd-tab"
-            }
-            onClick={() => onDataSourceChange("client")}
-          >
-            自社で入力
-          </button>
-        </div>
-      </section>
-
-      {dataSource === "sample" ? (
-        <CompanyPicker
-          value={company}
-          onChange={(c) => {
-            applyCompany(c);
-          }}
-        />
-      ) : (
-        <ClientCompanyForm
-          applied={clientApplied}
-          draft={clientDraft}
-          onDraftChange={setClientDraft}
-          onApply={(c) => {
-            setClientApplied(true);
-            setClientAnalyzed(false);
-            setFlags([]);
-            setJudgments({});
-            setExtraPriors([]);
-            setAskAnswer(null);
-            applyCompany(c);
-          }}
-        />
-      )}
-
-      {dataSource === "client" && clientApplied ? (
-        <>
-          <ClientDdSetupPanel
-            company={company}
-            extraPriors={extraPriors}
-            materials={materials}
-            analyzing={analyzing}
-            scanStep={scanStep}
-            onAddPrior={(text) =>
-              setExtraPriors((prev) =>
-                prev.includes(text) ? prev : [...prev, text],
-              )
-            }
-            onMaterialsChange={onMaterialsChange}
-            onAnalyze={() => void runClientAnalysis()}
-          />
-          <LivePayrollPanel
-            onComplete={() => addOnComplete("live_payroll_attendance")}
-          />
-        </>
-      ) : null}
-
-      {formBlocked ? (
-        <p className="dd-muted dd-blocked-hint">
-          対象企業情報を入力し「対象企業として設定」を押すと、DD準備へ進みます。
-        </p>
-      ) : null}
-
-      {dataSource === "client" && clientAnalyzed && flags.length > 0 ? (
-        <>
-          <DdFlagReport
-            companyName={company.name}
-            industry={company.industry}
-            flags={flags}
-            summary={flagSummary}
-            judgments={judgments}
-            onJudgment={(id, value) =>
-              setJudgments((prev) => ({ ...prev, [id]: value }))
-            }
-            strategyAxis={params.strategyAxis}
-            questions={company.questions.phase1[params.strategyAxis]}
-          />
-          <DdFollowupAsk
-            disabled={askNeedsSetup}
-            busy={askBusy}
-            needSetup={askNeedsSetup}
-            answer={askAnswer}
-            citations={askCitations}
+      <div className="dd-workbench">
+        <aside className="dd-workbench__rail">
+          <ExperienceModeBar
+            mode={mode}
+            onModeChange={setMode}
             onNeedSetup={() => setAccessOpen(true)}
-            onAsk={onAsk}
+            trialPortalUrl={trialPortalHref}
+            fromSelection={Boolean(returnUrl)}
           />
-        </>
-      ) : null}
 
-      {showExit ? (
-        <div className="dd-results-stack">
+          <section className="dd-card dd-card--compact">
+            <div className="dd-card__head dd-card__head--row">
+              <h2>データの入れ方</h2>
+              <p className="dd-muted">サンプル or 自社</p>
+            </div>
+            <div className="dd-source-tabs" role="tablist" aria-label="データソース">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={dataSource === "sample"}
+                className={
+                  dataSource === "sample" ? "dd-tab dd-tab--on" : "dd-tab"
+                }
+                onClick={() => onDataSourceChange("sample")}
+              >
+                サンプル企業
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={dataSource === "client"}
+                className={
+                  dataSource === "client" ? "dd-tab dd-tab--on" : "dd-tab"
+                }
+                onClick={() => onDataSourceChange("client")}
+              >
+                自社で入力
+              </button>
+            </div>
+          </section>
+
           {dataSource === "sample" ? (
-            <p className="dd-scenario-note">
-              サンプル企業は事前診断済みのシナリオです
-            </p>
+            <CompanyPicker
+              value={company}
+              onChange={(c) => {
+                applyCompany(c);
+              }}
+            />
           ) : (
-            <p className="dd-muted dd-form-hint">
-              ② バリューアップ → EXIT — 解析結果を踏まえた試算
-            </p>
+            <ClientCompanyForm
+              applied={clientApplied}
+              draft={clientDraft}
+              onDraftChange={setClientDraft}
+              onApply={(c) => {
+                setClientApplied(true);
+                setClientAnalyzed(false);
+                setFlags([]);
+                setJudgments({});
+                setExtraPriors([]);
+                setAskAnswer(null);
+                applyCompany(c);
+              }}
+            />
           )}
-          <ResultDashboard
-            company={company}
-            params={params}
-            computed={computed}
-            result={result}
-            equityDiff={equityDiff}
-            flashKpi={flashKpi}
-            flashBridge={flashBridge}
-            flashOffbalance={flashOffbalance}
-            dataSource={dataSource}
-            restoreLeverKey={restoreLeverKey}
-            onAxisChange={onAxisChange}
-            onOpenParams={() => setParamsOpen(true)}
-          />
 
-          <StorySections
-            company={company}
-            params={params}
-            computed={computed}
-            result={result}
-            onParamsChange={setParams}
-            usedActionIds={usedActionIds}
-            onUseAction={(id) =>
-              setUsedActionIds((prev) => new Set([...prev, id]))
-            }
-          />
-
-          <div className="dd-actions-bar">
-            <p className="dd-muted">
-              {mode === "sample"
-                ? "サンプル: 操作で即時反映"
-                : "API: 試算は即時、語りは再生成"}
+          {formBlocked ? (
+            <p className="dd-muted dd-blocked-hint">
+              対象企業情報を入力し「対象企業として設定」を押すと、DD準備へ進みます。
             </p>
-            <button
-              type="button"
-              className="dd-btn"
-              disabled={
-                busy || exitBlocked || !materialsStatus.withinHardLimit
-              }
-              onClick={() => void onUpdateProposal()}
-            >
-              {busy ? "更新中…" : "提案を更新"}
-            </button>
-          </div>
-        </div>
-      ) : dataSource === "client" && clientApplied && !clientAnalyzed ? (
-        <p className="dd-muted dd-blocked-hint">
-          「解析を実行」すると、フラグ報告のあと EXIT 試算が表示されます。
-        </p>
-      ) : null}
+          ) : null}
+        </aside>
 
-      {remaining != null ? (
-        <p className="dd-muted">体験コード 残り回数: {remaining}</p>
-      ) : null}
-      {error ? <p className="dd-error">{error}</p> : null}
+        <div className="dd-workbench__stage">
+          {dataSource === "client" && clientApplied ? (
+            <>
+              <ClientDdSetupPanel
+                company={company}
+                extraPriors={extraPriors}
+                materials={materials}
+                analyzing={analyzing}
+                scanStep={scanStep}
+                onAddPrior={(text) =>
+                  setExtraPriors((prev) =>
+                    prev.includes(text) ? prev : [...prev, text],
+                  )
+                }
+                onMaterialsChange={onMaterialsChange}
+                onAnalyze={() => void runClientAnalysis()}
+              />
+              <LivePayrollPanel
+                onComplete={() => addOnComplete("live_payroll_attendance")}
+              />
+            </>
+          ) : null}
+
+          {dataSource === "client" && clientAnalyzed && flags.length > 0 ? (
+            <>
+              <DdFlagReport
+                companyName={company.name}
+                industry={company.industry}
+                flags={flags}
+                summary={flagSummary}
+                judgments={judgments}
+                onJudgment={(id, value) =>
+                  setJudgments((prev) => ({ ...prev, [id]: value }))
+                }
+                strategyAxis={params.strategyAxis}
+                questions={company.questions.phase1[params.strategyAxis]}
+              />
+              <DdFollowupAsk
+                disabled={askNeedsSetup}
+                busy={askBusy}
+                needSetup={askNeedsSetup}
+                answer={askAnswer}
+                citations={askCitations}
+                onNeedSetup={() => setAccessOpen(true)}
+                onAsk={onAsk}
+              />
+            </>
+          ) : null}
+
+          {showExit ? (
+            <div className="dd-results-stack">
+              {dataSource === "sample" ? (
+                <p className="dd-scenario-note">
+                  サンプル企業は事前診断済みのシナリオです
+                </p>
+              ) : (
+                <p className="dd-muted dd-form-hint">
+                  ② バリューアップ → EXIT — 解析結果を踏まえた試算
+                </p>
+              )}
+              <ResultDashboard
+                company={company}
+                params={params}
+                computed={computed}
+                result={result}
+                equityDiff={equityDiff}
+                flashKpi={flashKpi}
+                flashBridge={flashBridge}
+                flashOffbalance={flashOffbalance}
+                dataSource={dataSource}
+                restoreLeverKey={restoreLeverKey}
+                onAxisChange={onAxisChange}
+                onOpenParams={() => setParamsOpen(true)}
+              />
+
+              <StorySections
+                company={company}
+                params={params}
+                computed={computed}
+                result={result}
+                onParamsChange={setParams}
+                usedActionIds={usedActionIds}
+                onUseAction={(id) =>
+                  setUsedActionIds((prev) => new Set([...prev, id]))
+                }
+              />
+
+              <div className="dd-actions-bar">
+                <p className="dd-muted">
+                  {mode === "sample"
+                    ? "サンプル: 操作で即時反映"
+                    : "API: 試算は即時、語りは再生成"}
+                </p>
+                <button
+                  type="button"
+                  className="dd-btn"
+                  disabled={
+                    busy || exitBlocked || !materialsStatus.withinHardLimit
+                  }
+                  onClick={() => void onUpdateProposal()}
+                >
+                  {busy ? "更新中…" : "提案を更新"}
+                </button>
+              </div>
+            </div>
+          ) : dataSource === "client" && clientApplied && !clientAnalyzed ? (
+            <p className="dd-muted dd-blocked-hint">
+              「解析を実行」すると、フラグ報告のあと EXIT 試算が表示されます。
+            </p>
+          ) : null}
+
+          {remaining != null ? (
+            <p className="dd-muted">体験コード 残り回数: {remaining}</p>
+          ) : null}
+          {error ? <p className="dd-error">{error}</p> : null}
+        </div>
+      </div>
 
       <ParamsBottomSheet
         open={paramsOpen}

@@ -1,5 +1,5 @@
 import { AiProvider } from '../types/access-mode.js';
-import { NormalizedMessage, AiResult } from '../types/provider.js';
+import { NormalizedMessage, AiRequest, AiResult } from '../types/provider.js';
 
 declare function getServerApiKey(provider: AiProvider): string;
 declare function runServerProviderRequest(input: {
@@ -12,6 +12,7 @@ declare function runServerProviderRequest(input: {
         type: "json_object";
     };
     temperature?: number;
+    reasoningEffort?: AiRequest["reasoningEffort"];
 }): Promise<AiResult>;
 
 export { getServerApiKey, runServerProviderRequest };

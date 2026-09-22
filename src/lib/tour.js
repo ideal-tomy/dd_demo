@@ -273,7 +273,7 @@ function setDemoState(step) {
   }
   switchPersona(DEMO_KEY);
   setCurrentPhase(step.phase);
-  switchPhase(step.phase);
+  switchPhase(step.phase, { scroll: false });
 }
 
 function dwellOf(step) {

@@ -54,5 +54,8 @@ export function renderValueup(persona) {
         <div class="wf-track"><i class="wf-fill gold" style="width:${(wf.exitEbitda / maxBar) * 100}%"></i></div>
         <span class="wf-val gold">${yen(wf.exitEbitda)}</span>
       </div>
-    </div>`;
+    </div>
+    <p class="phase-next">
+      <button type="button" class="phase-next-btn" data-go-phase="exit">EXIT準備を見る</button>
+    </p>`;
 }

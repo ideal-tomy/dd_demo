@@ -3,10 +3,22 @@ import { renderPhaseContent } from "./renderPhases.js";
 
 let onPhaseChange = null;
 
+const PANEL_IDS = {
+  dd: "phaseDd",
+  pmi: "phasePmi",
+  valueup: "phaseValueup",
+  exit: "phaseExit",
+};
+
 export function initPhases(handler) {
   onPhaseChange = handler;
   const container = document.getElementById("phaseStepper");
   if (!container) return;
+  document.body.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-go-phase]");
+    if (!btn) return;
+    switchPhase(btn.dataset.goPhase);
+  });
 
   container.innerHTML = "";
   PHASES.forEach((p, i) => {
@@ -46,7 +58,14 @@ function showPhasePanel(phase) {
   });
 }
 
-export function switchPhase(phase) {
+function scrollPhaseIntoView(phase) {
+  const el = document.getElementById(PANEL_IDS[phase]);
+  if (!el) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+}
+
+export function switchPhase(phase, opts = {}) {
   if (phase !== "dd" && !isDdComplete()) return;
   if (isScanning()) return;
 
@@ -57,6 +76,7 @@ export function switchPhase(phase) {
     btn.setAttribute("aria-selected", active ? "true" : "false");
   });
   showPhasePanel(phase);
+  if (opts.scroll !== false) scrollPhaseIntoView(phase);
   if (onPhaseChange) onPhaseChange(phase);
 }
 

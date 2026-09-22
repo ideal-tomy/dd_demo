@@ -4,6 +4,11 @@
   "framework": "vite",
   "rewrites": [
     { "source": "/ai", "destination": "/ai.html" },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "embed", "value": "intro" }],
+      "destination": "/ai.html"
+    },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {

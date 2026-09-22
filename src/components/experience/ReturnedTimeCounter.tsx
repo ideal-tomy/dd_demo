@@ -2,9 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { formatReturnedHours } from "../../config/returned-time";
 import { useReturnedTime } from "../../state/ReturnedTimeContext";
 
-export function ReturnedTimeCounter() {
+type Props = {
+  defaultOpen?: boolean;
+};
+
+export function ReturnedTimeCounter({ defaultOpen = false }: Props = {}) {
   const { totalHours, lines, basis } = useReturnedTime();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [display, setDisplay] = useState(totalHours);
   const prev = useRef(totalHours);
 

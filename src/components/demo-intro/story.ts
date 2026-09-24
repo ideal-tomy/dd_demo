@@ -4,6 +4,7 @@ export type DeviceId = "exit" | "axis" | "ask";
 export const scenes: {
   title: string;
   caption: string;
+  motion: string;
   duration: number;
   camera: Camera;
   stars: readonly DeviceId[];
@@ -11,6 +12,7 @@ export const scenes: {
   {
     title: "EXITを見る",
     caption: "サンプル企業のEXIT試算が並びます。",
+    motion: "EXITを見る",
     duration: 5000,
     camera: [264, 175, 1.02],
     stars: ["exit"],
@@ -18,6 +20,7 @@ export const scenes: {
   {
     title: "主軸へ",
     caption: "主軸を変えると、株式価値が動きます。",
+    motion: "主軸へ",
     duration: 4500,
     camera: [516, 175, 0.9],
     stars: ["exit", "axis"],
@@ -25,6 +28,7 @@ export const scenes: {
   {
     title: "主軸を選ぶ",
     caption: "効率化・整理・戦略の3つから選びます。",
+    motion: "主軸を選ぶ",
     duration: 5500,
     camera: [768, 175, 1.0],
     stars: ["axis"],
@@ -32,6 +36,7 @@ export const scenes: {
   {
     title: "処置が変わる",
     caption: "簿外の処置の書き方が、主軸に合わせて変わります。",
+    motion: "処置が変わる",
     duration: 5500,
     camera: [768, 175, 1.0],
     stars: ["axis"],
@@ -39,6 +44,7 @@ export const scenes: {
   {
     title: "問いへ",
     caption: "判断の問いと、返した時間が出ます。",
+    motion: "問いへ",
     duration: 4500,
     camera: [1020, 175, 0.9],
     stars: ["axis", "ask"],
@@ -46,6 +52,7 @@ export const scenes: {
   {
     title: "人が考える",
     caption: "人が考える問いが残ります。提出はしません。",
+    motion: "人が考える",
     duration: 5500,
     camera: [1272, 175, 0.98],
     stars: ["ask"],

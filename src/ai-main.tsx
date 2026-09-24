@@ -8,10 +8,14 @@ function isEmbedIntro() {
   return new URLSearchParams(window.location.search).get("embed") === "intro";
 }
 
+function isStageView() {
+  return new URLSearchParams(window.location.search).get("view") === "stage";
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     {isEmbedIntro() ? (
-      <main className="ki-embed-intro">
+      <main className={`ki-embed-intro${isStageView() ? " ki-embed-stage" : ""}`}>
         <DemoIntro />
       </main>
     ) : (
